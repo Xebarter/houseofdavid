@@ -10,11 +10,7 @@ interface HeaderProps {
   onCartClick: () => void;
 }
 
-const navItems = [
-  { name: 'Collection', path: '/', hash: '#collection' },
-  { name: 'About', path: '/about' },
-  { name: 'Journal', path: '/journal' },
-];
+const navItems = [{ name: 'Collections', path: '/collections' }];
 
 export function Header({ onCartClick }: HeaderProps) {
   const { getTotalItems } = useCart();
@@ -62,7 +58,7 @@ export function Header({ onCartClick }: HeaderProps) {
             {navItems.map((item) => (
               <button
                 key={item.name}
-                onClick={() => navigate(item.path, item.hash)}
+                onClick={() => navigate(item.path)}
                 className="text-xs uppercase tracking-wideish text-luxury-cream/70 hover:text-luxury-cream transition-colors"
               >
                 {item.name}
@@ -101,7 +97,7 @@ export function Header({ onCartClick }: HeaderProps) {
             {navItems.map((item) => (
               <button
                 key={item.name}
-                onClick={() => navigate(item.path, item.hash)}
+                onClick={() => navigate(item.path)}
                 className="block w-full text-left py-3 text-sm uppercase tracking-wideish text-luxury-cream/70 hover:text-luxury-cream border-b border-white/5 transition-colors"
               >
                 {item.name}

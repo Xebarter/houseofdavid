@@ -76,7 +76,7 @@ export function Footer() {
             <p className="luxury-label mb-6">Discover</p>
             <ul className="space-y-3">
               {[
-                { label: 'Collection', action: () => document.getElementById('collection')?.scrollIntoView({ behavior: 'smooth' }) },
+                { label: 'Collections', action: () => router.push('/collections') },
                 { label: 'Journal', action: () => router.push('/journal') },
                 { label: 'Our Story', action: () => router.push('/about') },
               ].map((item) => (

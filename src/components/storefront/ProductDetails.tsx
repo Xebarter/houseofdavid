@@ -270,7 +270,7 @@ export function ProductDetails({ onOpenCart }: ProductDetailsProps) {
             Home
           </Link>
           <span className="text-luxury-gold-muted/50">/</span>
-          <Link href="/#collection" className="hover:text-luxury-cream transition-colors">
+          <Link href="/collections" className="hover:text-luxury-cream transition-colors">
             Collection
           </Link>
           {category && (

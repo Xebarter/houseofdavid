@@ -3,8 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Header } from '@/components/storefront/Header';
 import { Hero } from '@/components/storefront/Hero';
-import { BrandStatement } from '@/components/storefront/BrandStatement';
-import { HomeCatalog } from '@/components/storefront/HomeCatalog';
+import { HomeShop } from '@/components/storefront/HomeShop';
 import { Cart } from '@/components/storefront/Cart';
 import { Checkout } from '@/components/storefront/Checkout';
 import { Footer } from '@/components/storefront/Footer';
@@ -38,8 +37,7 @@ export default function HomePage() {
           loading={!catalog}
           onOpenCart={() => setShowCart(true)}
         />
-        <BrandStatement />
-        <HomeCatalog catalog={catalog} />
+        <HomeShop catalog={catalog} />
       </main>
       <Footer />
       <Cart

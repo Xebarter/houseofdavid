@@ -103,9 +103,9 @@ export function Hero({ products = [], loading = false, onOpenCart }: HeroProps) 
               }`}
               style={{ animationDelay: '0.65s', animationFillMode: 'forwards' }}
             >
-              <button onClick={scrollToCollection} className="luxury-btn-primary min-w-[200px]">
+              <Link href="/collections" className="luxury-btn-primary min-w-[200px]">
                 Explore Collection
-              </button>
+              </Link>
               <Link href="/about" className="luxury-btn-ghost">
                 Our Heritage
               </Link>

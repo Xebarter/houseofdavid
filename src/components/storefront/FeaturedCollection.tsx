@@ -44,13 +44,13 @@ export function FeaturedCollection({ products, loading = false }: FeaturedCollec
             <p className="luxury-label mb-3">Curated Selection</p>
             <h2 className="luxury-heading text-3xl sm:text-4xl font-light">Signature Fragrances</h2>
           </div>
-          <a
-            href="#collection"
+          <Link
+            href="/collections"
             className="inline-flex items-center gap-2 text-xs uppercase tracking-wideish text-luxury-gold hover:text-luxury-gold-light transition-colors group"
           >
             View Full Collection
             <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" strokeWidth={1.5} />
-          </a>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
