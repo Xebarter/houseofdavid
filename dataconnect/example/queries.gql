@@ -1,0 +1,39 @@
+query ListEvents @auth(level: PUBLIC) {
+  events(orderBy: [{startTime: ASC}], limit: 20) {
+    id
+    title
+    startTime
+    location
+    organizer {
+      name
+    }
+  }
+}
+
+mutation CreateEvent($title: String!, $startTime: Timestamp!, $location: String!, $neighborhoodId: UUID!) @auth(level: USER) {
+  event_insert(data: {
+    title: $title,
+    startTime: $startTime,
+    location: $location,
+    neighborhoodId: $neighborhoodId,
+    organizerId_expr: "auth.uid"
+  })
+}
+
+mutation CreateRsvp($eventId: UUID!, $notes: String) @auth(level: USER) {
+  rsvp_insert(data: {
+    eventId: $eventId,
+    userId_expr: "auth.uid",
+    notes: $notes
+  })
+}
+
+query MyMessages @auth(level: USER) {
+  messages(where: {recipientId: {eq_expr: "auth.uid"}}, orderBy: [{timestamp: DESC}]) {
+    sender {
+      name
+    }
+    content
+    timestamp
+  }
+}

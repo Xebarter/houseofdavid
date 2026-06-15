@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-luxury-black text-luxury-cream font-sans antialiased;
+  }
+
+  ::selection {
+    @apply bg-luxury-gold/30 text-luxury-cream;
+  }
+}
+
+@layer components {
+  .luxury-label {
+    @apply text-xs font-medium uppercase tracking-luxury text-luxury-gold-muted;
+  }
+
+  .luxury-heading {
+    @apply font-display text-luxury-cream;
+  }
+
+  .luxury-divider {
+    @apply h-px w-full bg-gradient-to-r from-transparent via-luxury-gold/40 to-transparent;
+  }
+
+  .luxury-btn-primary {
+    @apply inline-flex items-center justify-center px-8 py-3.5 text-xs font-medium uppercase tracking-wideish
+      border border-luxury-gold/60 text-luxury-cream bg-transparent
+      hover:bg-luxury-gold hover:text-luxury-black hover:border-luxury-gold
+      transition-all duration-500;
+  }
+
+  .luxury-btn-ghost {
+    @apply inline-flex items-center justify-center px-8 py-3.5 text-xs font-medium uppercase tracking-wideish
+      text-luxury-cream/80 hover:text-luxury-cream
+      border-b border-transparent hover:border-luxury-gold/50
+      transition-all duration-300;
+  }
+}
+
+@layer utilities {
+  .admin-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(55 65 81) transparent;
+  }
+
+  .admin-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .admin-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .admin-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgb(55 65 81);
+    border-radius: 3px;
+  }
+
+  .admin-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(75 85 99);
+  }
+}

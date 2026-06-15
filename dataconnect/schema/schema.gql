@@ -1,0 +1,47 @@
+type Neighborhood @table {
+  name: String!
+  city: String!
+  zipCode: String!
+  description: String
+}
+
+type User @table {
+  name: String!
+  email: String!
+  phoneNumber: String
+  bio: String
+  neighborhood: Neighborhood!
+}
+
+type Post @table {
+  title: String!
+  content: String!
+  type: String!
+  imageUrl: String
+  expiryDate: Date
+  author: User!
+  neighborhood: Neighborhood!
+}
+
+type Event @table {
+  title: String!
+  startTime: Timestamp!
+  location: String!
+  description: String
+  maxAttendees: Int
+  neighborhood: Neighborhood!
+  organizer: User!
+}
+
+type Rsvp @table {
+  user: User!
+  event: Event!
+  notes: String
+}
+
+type Message @table {
+  sender: User!
+  recipient: User!
+  content: String!
+  timestamp: Timestamp!
+}
