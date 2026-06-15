@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Header } from '@/components/storefront/Header';
 import { Hero } from '@/components/storefront/Hero';
 import { BrandStatement } from '@/components/storefront/BrandStatement';
@@ -8,10 +8,21 @@ import { HomeCatalog } from '@/components/storefront/HomeCatalog';
 import { Cart } from '@/components/storefront/Cart';
 import { Checkout } from '@/components/storefront/Checkout';
 import { Footer } from '@/components/storefront/Footer';
+import { getStorefrontCatalog } from '@/lib/firestore';
+import type { Product, Category } from '@/lib/types';
 
 export default function HomePage() {
   const [showCart, setShowCart] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
+  const [catalog, setCatalog] = useState<{ products: Product[]; categories: Category[] } | null>(
+    null
+  );
+
+  useEffect(() => {
+    getStorefrontCatalog()
+      .then(setCatalog)
+      .catch((err) => console.error('Error loading catalog:', err));
+  }, []);
 
   const handleCheckout = () => {
     setShowCart(false);
@@ -22,9 +33,13 @@ export default function HomePage() {
     <div className="min-h-screen bg-luxury-black">
       <Header onCartClick={() => setShowCart(true)} />
       <main>
-        <Hero />
+        <Hero
+          products={catalog?.products}
+          loading={!catalog}
+          onOpenCart={() => setShowCart(true)}
+        />
         <BrandStatement />
-        <HomeCatalog />
+        <HomeCatalog catalog={catalog} />
       </main>
       <Footer />
       <Cart

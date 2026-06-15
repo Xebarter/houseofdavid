@@ -19,7 +19,12 @@ import {
   CONCENTRATIONS,
   slugify,
   formToPreviewProduct,
+  getDisplayImageUrl,
 } from './productFormUtils';
+import type { ImageVariants } from '@/lib/images/types';
+import type { UploadProgressCallback } from '@/lib/upload';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
+import { PRODUCT_CARD_SIZES } from '@/lib/images/urls';
 
 type CategoryOption = { id: string; name: string };
 
@@ -37,8 +42,11 @@ type ProductComposerProps = {
   onClose: () => void;
   onChange: (patch: Partial<ProductFormData>) => void;
   onGalleryChange: (urls: string[]) => void;
+  onGalleryItemAdd?: (url: string, variants: ImageVariants) => void;
+  onPrimaryImageChange: (url: string, variants?: ImageVariants | null) => void;
+  imageVariants?: ImageVariants | null;
   onSave: (addAnother?: boolean) => void;
-  onUpload: (file: File, onProgress: (percent: number) => void) => Promise<string>;
+  onUpload: (file: File, onProgress: UploadProgressCallback) => Promise<{ url: string; variants: ImageVariants }>;
   onUploadStateChange: (uploading: boolean) => void;
   getCategoryName: (id: string) => string;
 };
@@ -60,10 +68,13 @@ function ProductLivePreview({
       </div>
       <div className="p-4">
         <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-gray-800 border border-white/5 mb-4">
-          <img
-            src={product.image_url}
+          <OptimizedImage
+            src={getDisplayImageUrl(product.image_url)}
             alt={product.name || 'Product preview'}
-            className="w-full h-full object-cover"
+            variants={product.image_variants}
+            sizes={PRODUCT_CARD_SIZES}
+            aspectRatio="3/4"
+            className="w-full h-full"
           />
           {(product.featured || product.is_new || product.is_limited) && (
             <span className="absolute top-3 left-3 text-[9px] uppercase tracking-wider text-amber-400 border border-amber-500/30 px-2 py-0.5 bg-black/50 backdrop-blur-sm rounded">
@@ -114,6 +125,9 @@ export function ProductComposer({
   onClose,
   onChange,
   onGalleryChange,
+  onGalleryItemAdd,
+  onPrimaryImageChange,
+  imageVariants,
   onSave,
   onUpload,
   onUploadStateChange,
@@ -153,7 +167,7 @@ export function ProductComposer({
     [editingProduct, onChange]
   );
 
-  const preview = formToPreviewProduct(form, galleryUrls);
+  const preview = formToPreviewProduct(form, galleryUrls, 'preview', imageVariants);
   const brandName = brands.find((b) => b.id === form.brand_id)?.name;
 
   const footer = (
@@ -286,8 +300,9 @@ export function ProductComposer({
             <ProductImageZone
               primaryUrl={form.image_url}
               galleryUrls={galleryUrls}
-              onPrimaryChange={(url) => onChange({ image_url: url })}
+              onPrimaryChange={onPrimaryImageChange}
               onGalleryChange={onGalleryChange}
+              onGalleryItemAdd={onGalleryItemAdd}
               onUpload={onUpload}
               onUploadStateChange={onUploadStateChange}
               disabled={isBusy}

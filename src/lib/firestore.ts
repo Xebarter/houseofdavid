@@ -17,8 +17,9 @@ import {
   getAggregateFromServer,
   sum,
 } from 'firebase/firestore';
-import { db } from './firebase';
+import { auth, db } from './firebase';
 import { getCached, setCache, invalidateCache, cachedFetch } from './admin-cache';
+import { sanitizeProductWriteData } from './product-data';
 import type {
   Product,
   Category,
@@ -69,6 +70,45 @@ function docToData<T extends { id: string }>(
     }
   }
   return result as T;
+}
+
+async function adminApiFetch(path: string, init: RequestInit): Promise<Response> {
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error('You must be signed in to perform this action');
+  }
+
+  const token = await user.getIdToken(true);
+  const headers = new Headers(init.headers);
+  headers.set('Authorization', `Bearer ${token}`);
+  if (init.body && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json');
+  }
+
+  const response = await fetch(path, { ...init, headers });
+  if (!response.ok) {
+    const data = (await response.json().catch(() => ({}))) as { error?: string };
+    throw new Error(data.error || `Request failed (${response.status})`);
+  }
+
+  return response;
+}
+
+export async function getAdminCatalog(): Promise<{
+  products: Product[];
+  categories: Category[];
+  brands: Brand[];
+}> {
+  const response = await adminApiFetch('/api/admin/catalog', { method: 'GET' });
+  const data = (await response.json()) as {
+    products: Product[];
+    categories: Category[];
+    brands: Brand[];
+  };
+  setCache('products', data.products);
+  setCache('categories', data.categories);
+  setCache('brands', data.brands);
+  return data;
 }
 
 function chunkArray<T>(arr: T[], size: number): T[][] {
@@ -157,21 +197,48 @@ export async function getProductById(id: string): Promise<Product | null> {
 }
 
 export async function createProduct(data: Omit<Product, 'id' | 'created_at' | 'updated_at'>): Promise<Product> {
-  const now = new Date().toISOString();
-  const ref = await addDoc(collection(db, COLLECTIONS.products), {
+  const payload = sanitizeProductWriteData({
     ...data,
     gallery_urls: data.gallery_urls || [],
+  }) as Omit<Product, 'id' | 'created_at' | 'updated_at'>;
+
+  if (typeof window !== 'undefined') {
+    const response = await adminApiFetch('/api/admin/products', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    const { product } = (await response.json()) as { product: Product };
+    invalidateCache('products');
+    invalidateCache('storefront');
+    return product;
+  }
+
+  const now = new Date().toISOString();
+  const ref = await addDoc(collection(db, COLLECTIONS.products), {
+    ...payload,
     created_at: now,
     updated_at: now,
   });
   invalidateCache('products');
   invalidateCache('storefront');
-  return { id: ref.id, ...data, gallery_urls: data.gallery_urls || [], created_at: now, updated_at: now };
+  return { id: ref.id, ...payload, created_at: now, updated_at: now };
 }
 
 export async function updateProduct(id: string, data: Partial<Product>): Promise<void> {
+  const payload = sanitizeProductWriteData(data as Record<string, unknown>);
+
+  if (typeof window !== 'undefined') {
+    await adminApiFetch('/api/admin/products', {
+      method: 'PATCH',
+      body: JSON.stringify({ id, ...payload }),
+    });
+    invalidateCache('products');
+    invalidateCache('storefront');
+    return;
+  }
+
   await updateDoc(doc(db, COLLECTIONS.products, id), {
-    ...data,
+    ...payload,
     updated_at: new Date().toISOString(),
   });
   invalidateCache('products');
@@ -179,6 +246,16 @@ export async function updateProduct(id: string, data: Partial<Product>): Promise
 }
 
 export async function deleteProduct(id: string): Promise<void> {
+  if (typeof window !== 'undefined') {
+    await adminApiFetch('/api/admin/products', {
+      method: 'DELETE',
+      body: JSON.stringify({ id }),
+    });
+    invalidateCache('products');
+    invalidateCache('storefront');
+    return;
+  }
+
   await deleteDoc(doc(db, COLLECTIONS.products, id));
   invalidateCache('products');
   invalidateCache('storefront');
@@ -240,6 +317,24 @@ export async function getProductsByCategory(categoryId: string): Promise<Product
   return snapshot.docs.map((d) => docToData<Product>(d.id, d.data()));
 }
 
+export async function getRelatedProducts(
+  categoryId: string,
+  excludeId: string,
+  max = 4
+): Promise<Product[]> {
+  if (!categoryId) return [];
+  const q = query(
+    collection(db, COLLECTIONS.products),
+    where('category_id', '==', categoryId),
+    limit(max + 5)
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs
+    .map((d) => docToData<Product>(d.id, d.data()))
+    .filter((p) => p.id !== excludeId)
+    .slice(0, max);
+}
+
 // ─── Brands ─────────────────────────────────────────────────────────────────
 
 export async function getBrands(): Promise<Brand[]> {
@@ -258,14 +353,18 @@ export async function getBrandById(id: string): Promise<Brand | null> {
 
 // ─── Product Notes ──────────────────────────────────────────────────────────
 
+const NOTE_LAYER_ORDER: Record<ProductNote['layer'], number> = {
+  top: 0,
+  heart: 1,
+  base: 2,
+};
+
 export async function getProductNotes(productId: string): Promise<ProductNote[]> {
-  const q = query(
-    collection(db, COLLECTIONS.productNotes),
-    where('product_id', '==', productId),
-    orderBy('layer')
-  );
+  const q = query(collection(db, COLLECTIONS.productNotes), where('product_id', '==', productId));
   const snapshot = await getDocs(q);
-  return snapshot.docs.map((d) => docToData<ProductNote>(d.id, d.data()));
+  return snapshot.docs
+    .map((d) => docToData<ProductNote>(d.id, d.data()))
+    .sort((a, b) => NOTE_LAYER_ORDER[a.layer] - NOTE_LAYER_ORDER[b.layer]);
 }
 
 // ─── Customers ──────────────────────────────────────────────────────────────

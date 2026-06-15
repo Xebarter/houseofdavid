@@ -1,10 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import type { Product } from '@/lib/types';
 import { formatCurrency } from '@/lib/format';
 import { useCart } from '@/contexts/CartContext';
-import { useRouter } from 'next/navigation';
+import { productPath } from '@/lib/product-routes';
+import { DEFAULT_PRODUCT_IMAGE } from '@/lib/featured-products';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
+import { PRODUCT_CARD_SIZES } from '@/lib/images/urls';
 
 interface ProductCardProps {
   product: Product;
@@ -13,9 +17,9 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const { addToCart } = useCart();
   const [added, setAdded] = useState(false);
-  const router = useRouter();
 
   const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     addToCart(product, 1);
     setAdded(true);
@@ -23,48 +27,51 @@ export function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <article
-      className="group cursor-pointer"
-      onClick={() => router.push(`/product/${product.id}`)}
-    >
-      <div className="relative aspect-[3/4] overflow-hidden bg-luxury-charcoal border border-white/5 group-hover:border-luxury-gold/20 transition-colors duration-500 mb-5">
-        <img
-          src={product.image_url || 'https://images.unsplash.com/photo-1594035910387-fea47794261f?w=800'}
-          alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-luxury-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+    <Link href={productPath(product)} className="group block">
+      <article>
+        <div className="relative aspect-[3/4] overflow-hidden bg-luxury-charcoal border border-white/5 group-hover:border-luxury-gold/20 transition-colors duration-500 mb-5">
+          <OptimizedImage
+            src={product.image_url || DEFAULT_PRODUCT_IMAGE}
+            variants={product.image_variants}
+            alt={product.name}
+            sizes={PRODUCT_CARD_SIZES}
+            aspectRatio="3/4"
+            className="w-full h-full"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-luxury-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
-        {(product.featured || product.is_new || product.is_limited) && (
-          <span className="absolute top-4 left-4 luxury-label text-[10px] text-luxury-gold border border-luxury-gold/25 px-2.5 py-1 bg-luxury-black/40 backdrop-blur-sm">
-            {product.is_limited ? 'Limited' : product.is_new ? 'New' : 'Signature'}
-          </span>
-        )}
-
-        <button
-          onClick={handleAddToCart}
-          className="absolute bottom-0 left-0 right-0 py-4 text-xs uppercase tracking-wideish text-luxury-cream bg-luxury-black/80 backdrop-blur-sm translate-y-full group-hover:translate-y-0 transition-transform duration-500 hover:bg-luxury-gold hover:text-luxury-black"
-        >
-          {added ? 'Added' : 'Add to Bag'}
-        </button>
-      </div>
-
-      <div className="space-y-1">
-        <p className="text-[10px] uppercase tracking-wideish text-luxury-gold-muted">
-          {product.concentration} · {product.volume_ml}ml
-        </p>
-        <h3 className="luxury-heading text-lg font-medium group-hover:text-luxury-gold-light transition-colors line-clamp-1">
-          {product.name}
-        </h3>
-        <div className="flex items-baseline gap-2 pt-1">
-          <p className="text-sm text-luxury-cream/90">{formatCurrency(product.price)}</p>
-          {product.compare_at_price && product.compare_at_price > product.price && (
-            <p className="text-xs text-luxury-smoke line-through">
-              {formatCurrency(product.compare_at_price)}
-            </p>
+          {(product.featured || product.is_new || product.is_limited) && (
+            <span className="absolute top-4 left-4 luxury-label text-[10px] text-luxury-gold border border-luxury-gold/25 px-2.5 py-1 bg-luxury-black/40 backdrop-blur-sm z-10">
+              {product.is_limited ? 'Limited' : product.is_new ? 'New' : 'Signature'}
+            </span>
           )}
+
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            className="absolute bottom-0 left-0 right-0 z-10 py-4 text-xs uppercase tracking-wideish text-luxury-cream bg-luxury-black/80 backdrop-blur-sm translate-y-full group-hover:translate-y-0 transition-transform duration-500 hover:bg-luxury-gold hover:text-luxury-black"
+          >
+            {added ? 'Added' : 'Add to Bag'}
+          </button>
         </div>
-      </div>
-    </article>
+
+        <div className="space-y-1">
+          <p className="text-[10px] uppercase tracking-wideish text-luxury-gold-muted">
+            {product.concentration} · {product.volume_ml}ml
+          </p>
+          <h3 className="luxury-heading text-lg font-medium group-hover:text-luxury-gold-light transition-colors line-clamp-1">
+            {product.name}
+          </h3>
+          <div className="flex items-baseline gap-2 pt-1">
+            <p className="text-sm text-luxury-cream/90">{formatCurrency(product.price)}</p>
+            {product.compare_at_price && product.compare_at_price > product.price && (
+              <p className="text-xs text-luxury-smoke line-through">
+                {formatCurrency(product.compare_at_price)}
+              </p>
+            )}
+          </div>
+        </div>
+      </article>
+    </Link>
   );
 }

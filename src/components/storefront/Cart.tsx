@@ -1,9 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { X, Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { formatCurrency } from '@/lib/format';
+import { productPath } from '@/lib/product-routes';
+import { DEFAULT_PRODUCT_IMAGE } from '@/lib/featured-products';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
+import { CART_THUMB_SIZES } from '@/lib/images/urls';
 
 interface CartProps {
   isOpen: boolean;
@@ -24,134 +29,129 @@ export function Cart({ isOpen, onClose, onCheckout }: CartProps) {
   };
 
   const calculateTotal = () => {
-    return cartItems.reduce(
-      (total, item) => total + item.product.price * item.quantity,
-      0
-    );
+    return cartItems.reduce((total, item) => total + item.product.price * item.quantity, 0);
   };
 
   if (!isOpen && !animatingOut) return null;
 
   return (
     <div
-      className={`fixed inset-0 z-50 overflow-hidden ${isOpen || animatingOut ? 'pointer-events-auto' : 'pointer-events-none'
-        }`}
+      className={`fixed inset-0 z-50 overflow-hidden ${
+        isOpen || animatingOut ? 'pointer-events-auto' : 'pointer-events-none'
+      }`}
     >
-      {/* Backdrop */}
       <div
-        className={`absolute inset-0 bg-black/60 transition-opacity duration-300 ${isOpen && !animatingOut ? 'opacity-100' : 'opacity-0'
-          }`}
+        className={`absolute inset-0 bg-black/70 transition-opacity duration-300 ${
+          isOpen && !animatingOut ? 'opacity-100' : 'opacity-0'
+        }`}
         onClick={handleStartClosing}
-      ></div>
+      />
 
-      {/* Slide-over panel */}
       <div
-        className={`absolute right-0 top-0 h-full w-full max-w-md bg-gray-900 shadow-2xl transition-transform duration-300 transform ${isOpen && !animatingOut ? 'translate-x-0' : 'translate-x-full'
-          }`}
+        className={`absolute right-0 top-0 h-full w-full max-w-md bg-luxury-charcoal border-l border-white/5 shadow-2xl transition-transform duration-300 transform ${
+          isOpen && !animatingOut ? 'translate-x-0' : 'translate-x-full'
+        }`}
       >
         <div className="flex flex-col h-full">
-
-          {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-gray-800">
-            <h2 className="text-xl font-bold text-amber-50">Shopping Bag</h2>
-
+          <div className="flex items-center justify-between p-6 border-b border-white/5">
+            <h2 className="luxury-heading text-lg font-medium text-luxury-cream">Shopping Bag</h2>
             <button
               onClick={handleStartClosing}
-              className="p-2 text-amber-50 hover:text-amber-300 transition-colors"
+              className="p-2 text-luxury-cream/60 hover:text-luxury-cream transition-colors"
+              aria-label="Close cart"
             >
-              <X size={24} />
+              <X size={20} strokeWidth={1.25} />
             </button>
           </div>
 
-          {/* Items */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {cartItems.length === 0 ? (
-              <div className="text-center py-12">
-                <ShoppingBag className="mx-auto h-12 w-12 text-amber-500" />
-                <p className="text-amber-300 mt-4">Your bag is empty</p>
-
+              <div className="text-center py-16">
+                <ShoppingBag className="mx-auto h-10 w-10 text-luxury-gold-muted" strokeWidth={1.25} />
+                <p className="text-luxury-smoke mt-4 text-sm font-light">Your bag is empty</p>
                 <button
                   onClick={handleStartClosing}
-                  className="mt-4 text-amber-500 hover:text-amber-400 transition-colors"
+                  className="mt-6 luxury-btn-ghost text-xs"
                 >
-                  Start shopping
+                  Continue shopping
                 </button>
               </div>
             ) : (
               cartItems.map((item) => (
                 <div
                   key={item.product.id}
-                  className="flex gap-4 bg-gray-800 rounded-lg p-4"
+                  className="flex gap-4 border border-white/5 bg-luxury-black/40 p-4"
                 >
-                  <img
-                    src={item.product.image_url || 'https://placehold.co/100'}
-                    alt={item.product.name}
-                    className="w-16 h-16 object-cover rounded"
-                  />
+                  <Link
+                    href={productPath(item.product)}
+                    onClick={handleStartClosing}
+                    className="flex-shrink-0 w-16 h-20 relative overflow-hidden border border-white/5"
+                  >
+                    <OptimizedImage
+                      src={item.product.image_url || DEFAULT_PRODUCT_IMAGE}
+                      variants={item.product.image_variants}
+                      alt={item.product.name}
+                      sizes={CART_THUMB_SIZES}
+                      className="w-full h-full"
+                    />
+                  </Link>
 
-                  <div className="flex-1">
-                    <h3 className="font-medium text-amber-50 line-clamp-1">
+                  <div className="flex-1 min-w-0">
+                    <Link
+                      href={productPath(item.product)}
+                      onClick={handleStartClosing}
+                      className="luxury-heading text-sm font-medium text-luxury-cream hover:text-luxury-gold-light transition-colors line-clamp-2"
+                    >
                       {item.product.name}
-                    </h3>
-                    <p className="text-amber-300 text-sm">
-                      {item.product.volume_ml}ml • {formatCurrency(item.product.price)}
+                    </Link>
+                    <p className="text-luxury-smoke text-xs mt-1 font-light">
+                      {item.product.volume_ml}ml · {formatCurrency(item.product.price)}
                     </p>
 
-                    {/* Quantity Controls */}
-                    <div className="flex items-center gap-2 mt-2">
+                    <div className="flex items-center gap-2 mt-3">
                       <button
                         onClick={() =>
-                          updateQuantity(
-                            item.product.id,
-                            Math.max(1, item.quantity - 1)
-                          )
+                          updateQuantity(item.product.id, Math.max(1, item.quantity - 1))
                         }
-                        className="w-8 h-8 rounded-full bg-gray-700 text-amber-50 flex items-center justify-center hover:bg-gray-600 transition-colors"
+                        className="w-7 h-7 border border-white/10 text-luxury-cream/70 flex items-center justify-center hover:border-luxury-gold/30 transition-colors"
+                        aria-label="Decrease quantity"
                       >
-                        <Minus size={16} />
+                        <Minus size={14} strokeWidth={1.25} />
                       </button>
-
-                      {/* FIXED: Prevent quantity text from getting cropped */}
-                      <span className="text-amber-50 min-w-[22px] text-center text-base">
+                      <span className="text-luxury-cream min-w-[20px] text-center text-sm tabular-nums">
                         {item.quantity}
                       </span>
-
                       <button
-                        onClick={() =>
-                          updateQuantity(item.product.id, item.quantity + 1)
-                        }
-                        className="w-8 h-8 rounded-full bg-gray-700 text-amber-50 flex items-center justify-center hover:bg-gray-600 transition-colors"
+                        onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                        className="w-7 h-7 border border-white/10 text-luxury-cream/70 flex items-center justify-center hover:border-luxury-gold/30 transition-colors"
+                        aria-label="Increase quantity"
                       >
-                        <Plus size={16} />
+                        <Plus size={14} strokeWidth={1.25} />
                       </button>
                     </div>
                   </div>
 
                   <button
                     onClick={() => removeFromCart(item.product.id)}
-                    className="text-amber-500 hover:text-red-500 transition-colors self-start mt-2"
+                    className="text-luxury-smoke hover:text-red-400/80 transition-colors self-start"
+                    aria-label="Remove item"
                   >
-                    <Trash2 size={18} />
+                    <Trash2 size={16} strokeWidth={1.25} />
                   </button>
                 </div>
               ))
             )}
           </div>
 
-          {/* Footer */}
           {cartItems.length > 0 && (
-            <div className="border-t border-gray-800 p-6 space-y-4">
+            <div className="border-t border-white/5 p-6 space-y-4">
               <div className="flex justify-between items-center">
-                <span className="text-amber-50">Total</span>
-                <span className="text-2xl font-bold text-amber-50">
+                <span className="text-xs uppercase tracking-wideish text-luxury-smoke">Total</span>
+                <span className="text-xl text-luxury-cream tracking-wide">
                   {formatCurrency(calculateTotal())}
                 </span>
               </div>
-
-              <button
-                onClick={onCheckout}
-                className="w-full bg-gradient-to-r from-amber-600 to-yellow-600 text-white font-bold py-3 px-6 rounded-xl hover:from-amber-700 hover:to-yellow-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
-              >
+              <button onClick={onCheckout} className="luxury-btn-primary w-full min-h-[48px]">
                 Checkout
               </button>
             </div>

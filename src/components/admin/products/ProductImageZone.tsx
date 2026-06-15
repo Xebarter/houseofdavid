@@ -1,24 +1,29 @@
 'use client';
 
-import { useCallback, useRef, useState, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ImagePlus, X, Star } from 'lucide-react';
 import { AdminProgressRing } from '@/components/admin/ui/AdminUI';
-import { DEFAULT_IMAGE } from './productFormUtils';
+import { isPlaceholderImage } from './productFormUtils';
+import type { ImageVariants } from '@/lib/images/types';
+import type { UploadProgressCallback } from '@/lib/upload';
 
 export type ImageSlot = {
   id: string;
   previewUrl: string;
   remoteUrl?: string;
   progress: number | null;
+  phase?: string;
   error?: string;
+  intent: 'primary' | 'gallery';
 };
 
 type ProductImageZoneProps = {
   primaryUrl: string;
   galleryUrls: string[];
-  onPrimaryChange: (url: string) => void;
+  onPrimaryChange: (url: string, variants?: ImageVariants | null) => void;
   onGalleryChange: (urls: string[]) => void;
-  onUpload: (file: File, onProgress: (percent: number) => void) => Promise<string>;
+  onGalleryItemAdd?: (url: string, variants: ImageVariants) => void;
+  onUpload: (file: File, onProgress: UploadProgressCallback) => Promise<{ url: string; variants: ImageVariants }>;
   onUploadStateChange?: (uploading: boolean) => void;
   disabled?: boolean;
   compact?: boolean;
@@ -26,12 +31,24 @@ type ProductImageZoneProps = {
 
 const ACCEPT = 'image/jpeg,image/png,image/gif,image/webp';
 
-function createSlot(file: File): ImageSlot {
+function createSlot(file: File, intent: ImageSlot['intent']): ImageSlot {
   return {
     id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
     previewUrl: URL.createObjectURL(file),
     progress: 0,
+    intent,
   };
+}
+
+function resolvePrimaryDisplay(primaryUrl: string, slots: ImageSlot[]): string {
+  const normalizedPrimary = isPlaceholderImage(primaryUrl) ? '' : primaryUrl.trim();
+  if (normalizedPrimary) return normalizedPrimary;
+
+  const primarySlot = slots.find((s) => s.intent === 'primary');
+  if (primarySlot?.remoteUrl) return primarySlot.remoteUrl;
+  if (primarySlot?.previewUrl) return primarySlot.previewUrl;
+
+  return '';
 }
 
 export function ProductImageZone({
@@ -39,47 +56,76 @@ export function ProductImageZone({
   galleryUrls,
   onPrimaryChange,
   onGalleryChange,
+  onGalleryItemAdd,
   onUpload,
   onUploadStateChange,
   disabled = false,
   compact = false,
 }: ProductImageZoneProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const galleryRef = useRef(galleryUrls);
   const [dragging, setDragging] = useState(false);
   const [slots, setSlots] = useState<ImageSlot[]>([]);
 
-  const displayPrimary = primaryUrl || slots.find((s) => s.remoteUrl)?.remoteUrl || slots[0]?.previewUrl || '';
+  galleryRef.current = galleryUrls;
+
+  const displayPrimary = resolvePrimaryDisplay(primaryUrl, slots);
   const isUploading = slots.some((s) => s.progress !== null && s.progress < 100);
 
   useEffect(() => {
     onUploadStateChange?.(isUploading);
   }, [isUploading, onUploadStateChange]);
 
+  const slotsRef = useRef(slots);
+  slotsRef.current = slots;
+
+  useEffect(() => {
+    return () => {
+      slotsRef.current.forEach((slot) => {
+        if (slot.previewUrl.startsWith('blob:')) {
+          URL.revokeObjectURL(slot.previewUrl);
+        }
+      });
+    };
+  }, []);
+
   const updateSlot = useCallback((id: string, patch: Partial<ImageSlot>) => {
     setSlots((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)));
   }, []);
 
+  const removeSlot = useCallback((id: string) => {
+    setSlots((prev) => {
+      const slot = prev.find((s) => s.id === id);
+      if (slot?.previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(slot.previewUrl);
+      }
+      return prev.filter((s) => s.id !== id);
+    });
+  }, []);
+
   const processFile = useCallback(
-    async (file: File, setAsPrimary: boolean) => {
-      const slot = createSlot(file);
+    async (file: File, intent: ImageSlot['intent']) => {
+      const slot = createSlot(file, intent);
       setSlots((prev) => [...prev, slot]);
-      const shouldSetPrimary = setAsPrimary || !primaryUrl;
 
       try {
-        const remoteUrl = await onUpload(file, (percent) => {
-          updateSlot(slot.id, { progress: percent });
+        const result = await onUpload(file, (percent, phase) => {
+          updateSlot(slot.id, { progress: percent, phase: phase ?? 'uploading' });
         });
-        updateSlot(slot.id, { remoteUrl, progress: 100 });
+        updateSlot(slot.id, { remoteUrl: result.url, progress: 100, phase: 'done' });
 
-        if (shouldSetPrimary) {
-          onPrimaryChange(remoteUrl);
+        if (intent === 'primary') {
+          onPrimaryChange(result.url, result.variants);
         } else {
-          onGalleryChange([...galleryUrls, remoteUrl]);
+          const nextGallery = [...galleryRef.current];
+          if (!nextGallery.includes(result.url)) {
+            nextGallery.push(result.url);
+          }
+          onGalleryChange(nextGallery);
+          onGalleryItemAdd?.(result.url, result.variants);
         }
 
-        setTimeout(() => {
-          setSlots((prev) => prev.filter((s) => s.id !== slot.id));
-        }, 500);
+        setTimeout(() => removeSlot(slot.id), 400);
       } catch (err) {
         updateSlot(slot.id, {
           progress: null,
@@ -87,7 +133,7 @@ export function ProductImageZone({
         });
       }
     },
-    [galleryUrls, onGalleryChange, onPrimaryChange, onUpload, primaryUrl, updateSlot]
+    [galleryUrls, onGalleryChange, onGalleryItemAdd, onPrimaryChange, onUpload, removeSlot, updateSlot]
   );
 
   const handleFiles = useCallback(
@@ -95,20 +141,40 @@ export function ProductImageZone({
       if (disabled) return;
       const list = Array.from(files).filter((f) => f.type.startsWith('image/'));
       if (!list.length) return;
-      list.forEach((file, i) => {
-        processFile(file, i === 0 && !primaryUrl);
+
+      const hasPrimary = !isPlaceholderImage(primaryUrl);
+      const replacePrimary = compact || (hasPrimary && list.length === 1);
+
+      list.forEach((file, index) => {
+        let intent: ImageSlot['intent'];
+        if (compact) {
+          intent = 'primary';
+        } else if (replacePrimary && index === 0) {
+          intent = 'primary';
+        } else if (!hasPrimary && index === 0) {
+          intent = 'primary';
+        } else {
+          intent = 'gallery';
+        }
+        void processFile(file, intent);
       });
     },
-    [disabled, primaryUrl, processFile]
+    [compact, disabled, primaryUrl, processFile]
   );
+
+  const resetInput = () => {
+    if (inputRef.current) inputRef.current.value = '';
+  };
 
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragging(false);
     handleFiles(e.dataTransfer.files);
+    resetInput();
   };
 
-  const removePrimary = () => {
+  const removePrimary = (e: React.MouseEvent) => {
+    e.stopPropagation();
     onPrimaryChange('');
     if (galleryUrls.length) {
       onPrimaryChange(galleryUrls[0]);
@@ -118,7 +184,7 @@ export function ProductImageZone({
 
   const promoteGalleryImage = (url: string) => {
     const rest = galleryUrls.filter((u) => u !== url);
-    if (primaryUrl) rest.unshift(primaryUrl);
+    if (!isPlaceholderImage(primaryUrl)) rest.unshift(primaryUrl);
     onPrimaryChange(url);
     onGalleryChange(rest);
   };
@@ -128,6 +194,13 @@ export function ProductImageZone({
   };
 
   const activeUpload = slots.find((s) => s.progress !== null && s.progress < 100);
+  const uploadLabel =
+    activeUpload?.phase === 'optimizing'
+      ? 'Optimizing…'
+      : activeUpload?.phase === 'uploading'
+        ? 'Uploading…'
+        : 'Processing…';
+  const hasRemovablePrimary = Boolean(displayPrimary);
 
   if (compact) {
     return (
@@ -137,17 +210,25 @@ export function ProductImageZone({
           type="file"
           accept={ACCEPT}
           className="hidden"
-          onChange={(e) => e.target.files && handleFiles(e.target.files)}
+          onChange={(e) => {
+            if (e.target.files) handleFiles(e.target.files);
+            resetInput();
+          }}
         />
         <button
           type="button"
           disabled={disabled || isUploading}
           onClick={() => inputRef.current?.click()}
-          onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragging(true);
+          }}
           onDragLeave={() => setDragging(false)}
           onDrop={onDrop}
           className={`relative h-12 w-12 rounded-xl border-2 border-dashed overflow-hidden flex items-center justify-center transition-all ${
-            dragging ? 'border-emerald-500/60 bg-emerald-950/20' : 'border-gray-600 hover:border-emerald-500/40 bg-gray-800/40'
+            dragging
+              ? 'border-emerald-500/60 bg-emerald-950/20'
+              : 'border-gray-600 hover:border-emerald-500/40 bg-gray-800/40'
           } disabled:opacity-50`}
           title="Drop or click to upload"
         >
@@ -171,11 +252,17 @@ export function ProductImageZone({
         accept={ACCEPT}
         multiple
         className="hidden"
-        onChange={(e) => e.target.files && handleFiles(e.target.files)}
+        onChange={(e) => {
+          if (e.target.files) handleFiles(e.target.files);
+          resetInput();
+        }}
       />
 
       <div
-        onDragOver={(e) => { e.preventDefault(); if (!disabled) setDragging(true); }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          if (!disabled) setDragging(true);
+        }}
         onDragLeave={() => setDragging(false)}
         onDrop={onDrop}
         onClick={() => !disabled && inputRef.current?.click()}
@@ -188,24 +275,20 @@ export function ProductImageZone({
         {activeUpload ? (
           <div className="aspect-[4/3] flex flex-col items-center justify-center gap-3 bg-gray-900/80">
             <AdminProgressRing progress={activeUpload.progress ?? 0} size={72} strokeWidth={4} />
-            <p className="text-xs text-gray-400">Uploading image…</p>
+            <p className="text-xs text-gray-400">{uploadLabel}</p>
           </div>
         ) : displayPrimary ? (
           <div className="relative aspect-[4/3] group">
-            <img
-              src={displayPrimary}
-              alt="Product"
-              className="w-full h-full object-cover"
-            />
+            <img src={displayPrimary} alt="Product" className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
               <p className="text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity font-medium">
                 Click or drop to replace
               </p>
             </div>
-            {displayPrimary && displayPrimary !== DEFAULT_IMAGE && (
+            {hasRemovablePrimary && (
               <button
                 type="button"
-                onClick={(e) => { e.stopPropagation(); removePrimary(); }}
+                onClick={removePrimary}
                 className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/60 text-gray-300 hover:text-white hover:bg-black/80 transition-colors"
                 aria-label="Remove image"
               >
@@ -251,15 +334,17 @@ export function ProductImageZone({
               </div>
             </div>
           ))}
-          {slots.filter((s) => s.error).map((s) => (
-            <div
-              key={s.id}
-              className="h-16 w-16 rounded-lg border border-red-800/50 bg-red-950/30 flex items-center justify-center p-1"
-              title={s.error}
-            >
-              <span className="text-[9px] text-red-400 text-center leading-tight">Failed</span>
-            </div>
-          ))}
+          {slots
+            .filter((s) => s.error)
+            .map((s) => (
+              <div
+                key={s.id}
+                className="h-16 w-16 rounded-lg border border-red-800/50 bg-red-950/30 flex items-center justify-center p-1"
+                title={s.error}
+              >
+                <span className="text-[9px] text-red-400 text-center leading-tight">Failed</span>
+              </div>
+            ))}
         </div>
       )}
     </div>

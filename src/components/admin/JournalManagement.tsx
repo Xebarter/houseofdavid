@@ -105,8 +105,8 @@ export function JournalManagement() {
       const token = await getIdToken();
       if (!token) throw new Error('Not authenticated');
       setUploading(true);
-      const imageUrl = await uploadImage(file, token, 'journal-');
-      setFormData({ ...formData, image_url: imageUrl });
+      const result = await uploadImage(file, token, '');
+      setFormData({ ...formData, image_url: result.url });
       setSuccess('Image uploaded successfully!');
       e.target.value = '';
     } catch (err: unknown) {

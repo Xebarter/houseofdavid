@@ -1,9 +1,14 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
+import Link from 'next/link';
 import { X, Check } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { formatCurrency } from '@/lib/format';
+import { productPath } from '@/lib/product-routes';
+import { DEFAULT_PRODUCT_IMAGE } from '@/lib/featured-products';
+import { OptimizedImage } from '@/components/ui/OptimizedImage';
+import { CART_THUMB_SIZES } from '@/lib/images/urls';
 
 interface CheckoutProps {
   isOpen: boolean;
@@ -245,13 +250,23 @@ export function Checkout({ isOpen, onClose }: CheckoutProps) {
                 <div className="space-y-4">
                   {items.map((item) => (
                     <div key={item.product.id} className="flex items-center gap-4 p-3 bg-gray-800/50 rounded-lg">
-                      <img
-                        src={item.product.image_url || 'https://placehold.co/100'}
-                        alt={item.product.name}
-                        className="w-16 h-16 object-cover rounded"
-                      />
-                      <div className="flex-1">
-                        <h4 className="font-medium text-amber-50">{item.product.name}</h4>
+                      <Link href={productPath(item.product)} onClick={onClose} className="block w-16 h-16 relative overflow-hidden rounded">
+                        <OptimizedImage
+                          src={item.product.image_url || DEFAULT_PRODUCT_IMAGE}
+                          variants={item.product.image_variants}
+                          alt={item.product.name}
+                          sizes={CART_THUMB_SIZES}
+                          className="w-full h-full"
+                        />
+                      </Link>
+                      <div className="flex-1 min-w-0">
+                        <Link
+                          href={productPath(item.product)}
+                          onClick={onClose}
+                          className="font-medium text-amber-50 hover:text-amber-300 transition-colors line-clamp-1"
+                        >
+                          {item.product.name}
+                        </Link>
                         <p className="text-amber-200 text-sm">
                           {item.product.volume_ml}ml • {formatCurrency(item.product.price)} × {item.quantity}
                         </p>

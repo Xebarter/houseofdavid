@@ -4,6 +4,7 @@ import Link from 'next/link';
 import type { Product } from '@/lib/types';
 import { formatCurrency } from '@/lib/format';
 import { ArrowRight } from 'lucide-react';
+import { productPath } from '@/lib/product-routes';
 
 interface FeaturedCollectionProps {
   products?: Product[];
@@ -56,7 +57,7 @@ export function FeaturedCollection({ products, loading = false }: FeaturedCollec
           {featured.map((product) => (
             <Link
               key={product.id}
-              href={`/product/${product.id}`}
+              href={productPath(product)}
               className="group relative overflow-hidden bg-luxury-charcoal border border-white/5 hover:border-luxury-gold/20 transition-colors duration-500"
             >
               <div className="aspect-[3/4] overflow-hidden relative">

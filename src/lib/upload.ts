@@ -1,27 +1,43 @@
+import type { ImageVariants, UploadImageResult, UploadProgressCallback } from '@/lib/images/types';
+import { optimizeImageForUpload } from '@/lib/images/optimize-client';
+
+export type { UploadImageResult, ImageVariants, UploadProgressCallback };
+
 export async function uploadImage(
   file: File,
   idToken: string,
-  prefix = '',
-  onProgress?: (percent: number) => void
-): Promise<string> {
+  _prefix = '',
+  onProgress?: UploadProgressCallback
+): Promise<UploadImageResult> {
+  onProgress?.(2, 'optimizing');
+
+  const optimized = await optimizeImageForUpload(file, (percent, label) => {
+    onProgress?.(Math.round(percent * 0.35), 'optimizing');
+    void label;
+  });
+
+  onProgress?.(38, 'uploading');
+
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     const formData = new FormData();
-    formData.append('file', file);
-    if (prefix) formData.append('prefix', prefix);
+    formData.append('file', optimized.file);
 
     xhr.upload.addEventListener('progress', (event) => {
       if (event.lengthComputable && onProgress) {
-        onProgress(Math.round((event.loaded / event.total) * 100));
+        const uploadPct = Math.round((event.loaded / event.total) * 52);
+        onProgress(38 + uploadPct, 'uploading');
       }
     });
 
     xhr.addEventListener('load', () => {
       if (xhr.status >= 200 && xhr.status < 300) {
         try {
-          const data = JSON.parse(xhr.responseText);
-          onProgress?.(100);
-          resolve(data.url);
+          onProgress?.(95, 'processing');
+          const data = JSON.parse(xhr.responseText) as UploadImageResult;
+          onProgress?.(100, 'done');
+          URL.revokeObjectURL(optimized.previewUrl);
+          resolve(data);
         } catch {
           reject(new Error('Invalid upload response'));
         }
@@ -41,7 +57,6 @@ export async function uploadImage(
 
     xhr.open('POST', '/api/upload');
     xhr.setRequestHeader('Authorization', `Bearer ${idToken}`);
-    onProgress?.(0);
     xhr.send(formData);
   });
 }

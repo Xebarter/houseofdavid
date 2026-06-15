@@ -1,15 +1,15 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
-  getProducts,
-  getCategories,
-  getBrands,
+  getAdminCatalog,
   createProduct,
   updateProduct,
   deleteProduct,
 } from '@/lib/firestore';
 import type { Product, Category, Brand } from '@/lib/types';
+import type { ImageVariants } from '@/lib/images/types';
+import type { UploadProgressCallback } from '@/lib/upload';
 import { formatCurrency } from '@/lib/format';
 import { uploadImage } from '@/lib/upload';
 import { useAuth } from '@/contexts/AuthContext';
@@ -36,13 +36,14 @@ import { ProductComposer } from '@/components/admin/products/ProductComposer';
 import { AdminToastStack, useAdminToast } from '@/components/admin/products/AdminToast';
 import {
   PERFUME_CATEGORIES,
-  DEFAULT_IMAGE,
   type ProductFormData,
   makeEmptyForm,
   productToForm,
   buildProductPayload,
   validateProductForm,
   startSaveProgressTicker,
+  getDisplayImageUrl,
+  isPlaceholderImage,
 } from '@/components/admin/products/productFormUtils';
 
 export function ProductManagement() {
@@ -59,6 +60,8 @@ export function ProductManagement() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState<ProductFormData>(makeEmptyForm(''));
   const [galleryUrls, setGalleryUrls] = useState<string[]>([]);
+  const [imageVariants, setImageVariants] = useState<ImageVariants | null>(null);
+  const [galleryVariants, setGalleryVariants] = useState<(ImageVariants | null)[]>([]);
   const [saveProgress, setSaveProgress] = useState<number | null>(null);
 
   const [expressForm, setExpressForm] = useState({
@@ -68,6 +71,7 @@ export function ProductManagement() {
     category_id: '',
     image_url: '',
   });
+  const [expressImageVariants, setExpressImageVariants] = useState<ImageVariants | null>(null);
   const [expressSaveProgress, setExpressSaveProgress] = useState<number | null>(null);
   const [expressImageUploading, setExpressImageUploading] = useState(false);
   const [composerImageUploading, setComposerImageUploading] = useState(false);
@@ -100,6 +104,18 @@ export function ProductManagement() {
     );
   }, [products, search, getCategoryName]);
 
+  const galleryUrlsRef = useRef(galleryUrls);
+  const galleryVariantsRef = useRef(galleryVariants);
+  galleryUrlsRef.current = galleryUrls;
+  galleryVariantsRef.current = galleryVariants;
+
+  const handleGalleryChange = useCallback((urls: string[]) => {
+    const map = new Map(
+      galleryUrlsRef.current.map((u, i) => [u, galleryVariantsRef.current[i] ?? null])
+    );
+    setGalleryUrls(urls);
+    setGalleryVariants(urls.map((u) => map.get(u) ?? null));
+  }, []);
   const isComposerBusy = saveProgress !== null || composerImageUploading;
   const isExpressBusy = expressSaveProgress !== null || expressImageUploading;
 
@@ -117,11 +133,8 @@ export function ProductManagement() {
   async function loadData() {
     try {
       setLoading(true);
-      const [productsData, categoriesData, brandsData] = await Promise.all([
-        getProducts(),
-        getCategories(),
-        getBrands(),
-      ]);
+      const { products: productsData, categories: categoriesData, brands: brandsData } =
+        await getAdminCatalog();
       setProducts(productsData);
       setCategories(categoriesData);
       setBrands(brandsData);
@@ -133,17 +146,9 @@ export function ProductManagement() {
   }
 
   const uploadProductImage = useCallback(
-    async (file: File, onProgress: (percent: number) => void) => {
-      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-      if (!validTypes.includes(file.type)) {
-        throw new Error('Use JPEG, PNG, GIF, or WebP');
-      }
-      if (file.size > 5_000_000) {
-        throw new Error('Max file size is 5MB');
-      }
+    async (file: File, onProgress: UploadProgressCallback) => {
       const token = await getIdToken();
       if (!token) throw new Error('Not authenticated');
-      onProgress(2);
       return uploadImage(file, token, '', onProgress);
     },
     [getIdToken]
@@ -153,11 +158,15 @@ export function ProductManagement() {
     if (product) {
       setEditingProduct(product);
       setFormData(productToForm(product, defaultCategoryId(), brands[0]?.id || ''));
-      setGalleryUrls(product.gallery_urls || []);
+      setGalleryUrls((product.gallery_urls || []).filter((url) => !isPlaceholderImage(url)));
+      setImageVariants(product.image_variants ?? null);
+      setGalleryVariants(product.gallery_image_variants ?? []);
     } else {
       setEditingProduct(null);
       setFormData(makeEmptyForm(defaultCategoryId(), brands[0]?.id || ''));
       setGalleryUrls([]);
+      setImageVariants(null);
+      setGalleryVariants([]);
     }
     setComposerOpen(true);
   }
@@ -172,6 +181,8 @@ export function ProductManagement() {
       image_url: expressForm.image_url,
     });
     setGalleryUrls([]);
+    setImageVariants(expressImageVariants);
+    setGalleryVariants([]);
     setComposerOpen(true);
   }
 
@@ -190,6 +201,8 @@ export function ProductManagement() {
       addAnother?: boolean;
       onSuccess?: () => void;
       blockIfUploading?: boolean;
+      imageVariants?: ImageVariants | null;
+      galleryImageVariants?: (ImageVariants | null)[];
     }
   ) {
     const {
@@ -198,6 +211,8 @@ export function ProductManagement() {
       addAnother = false,
       onSuccess,
       blockIfUploading = false,
+      imageVariants: variants = null,
+      galleryImageVariants = [],
     } = options;
 
     if (blockIfUploading && (expressImageUploading || composerImageUploading)) {
@@ -211,7 +226,7 @@ export function ProductManagement() {
       return null;
     }
 
-    const payload = buildProductPayload(form, galleryUrls);
+    const payload = buildProductPayload(form, galleryUrls, variants, galleryImageVariants);
     setProgress(5);
     const ticker = startSaveProgressTicker(setProgress);
     const now = new Date().toISOString();
@@ -257,6 +272,8 @@ export function ProductManagement() {
       if (addAnother) {
         setFormData(makeEmptyForm(defaultCategoryId(), brands[0]?.id || ''));
         setGalleryUrls([]);
+        setImageVariants(null);
+        setGalleryVariants([]);
         setEditingProduct(null);
       } else {
         setComposerOpen(false);
@@ -283,6 +300,8 @@ export function ProductManagement() {
       editingProduct,
       addAnother,
       blockIfUploading: true,
+      imageVariants,
+      galleryImageVariants: galleryVariants,
     });
   }
 
@@ -299,6 +318,7 @@ export function ProductManagement() {
       setProgress: setExpressSaveProgress,
       editingProduct: null,
       blockIfUploading: true,
+      imageVariants: expressImageVariants,
       onSuccess: () => {
         setExpressForm({
           name: '',
@@ -307,6 +327,7 @@ export function ProductManagement() {
           category_id: expressForm.category_id || defaultCategoryId(),
           image_url: '',
         });
+        setExpressImageVariants(null);
       },
     });
   }
@@ -352,6 +373,10 @@ export function ProductManagement() {
           onOpenComposer={openComposerFromExpress}
           onUpload={uploadProductImage}
           onUploadStateChange={setExpressImageUploading}
+          onImageChange={(url, variants) => {
+            setExpressForm((prev) => ({ ...prev, image_url: url }));
+            setExpressImageVariants(variants ?? null);
+          }}
         />
       </div>
 
@@ -382,7 +407,7 @@ export function ProductManagement() {
                 <AdminTd>
                   <div className="flex items-center gap-3">
                     <img
-                      src={product.image_url || DEFAULT_IMAGE}
+                      src={getDisplayImageUrl(product.image_url)}
                       alt=""
                       className="h-11 w-11 object-cover rounded-lg border border-gray-700/80 flex-shrink-0"
                     />
@@ -457,7 +482,15 @@ export function ProductManagement() {
         imageUploading={composerImageUploading}
         onClose={closeComposer}
         onChange={(patch) => setFormData((prev) => ({ ...prev, ...patch }))}
-        onGalleryChange={setGalleryUrls}
+        onGalleryChange={handleGalleryChange}
+        onGalleryItemAdd={(_url, variants) => {
+          setGalleryVariants((prev) => [...prev, variants]);
+        }}
+        onPrimaryImageChange={(url, variants) => {
+          setFormData((prev) => ({ ...prev, image_url: url }));
+          setImageVariants(variants ?? null);
+        }}
+        imageVariants={imageVariants}
         onSave={handleComposerSave}
         onUpload={uploadProductImage}
         onUploadStateChange={setComposerImageUploading}

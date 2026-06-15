@@ -1,25 +1,30 @@
-# Firestore composite indexes required for queries
-
-# journal_posts: published + published_at (desc)
-# Collection: journal_posts
-# Fields: published ASC, published_at DESC
-
-# journal_posts: published + category_id + published_at (desc)
-# Collection: journal_posts
-# Fields: published ASC, category_id ASC, published_at DESC
-
-# product_notes: product_id + layer
-# Collection: product_notes
-# Fields: product_id ASC, layer ASC
-
-# order_items: order_id
-# Collection: order_items
-# Fields: order_id ASC
-
-# customers: email
-# Collection: customers
-# Fields: email ASC
-
-# journal_posts: slug + published
-# Collection: journal_posts
-# Fields: slug ASC, published ASC
+{
+  "indexes": [
+    {
+      "collectionGroup": "journal_posts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "published", "order": "ASCENDING" },
+        { "fieldPath": "published_at", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "journal_posts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "published", "order": "ASCENDING" },
+        { "fieldPath": "category_id", "order": "ASCENDING" },
+        { "fieldPath": "published_at", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "journal_posts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "slug", "order": "ASCENDING" },
+        { "fieldPath": "published", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

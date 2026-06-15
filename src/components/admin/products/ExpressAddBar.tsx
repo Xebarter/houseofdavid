@@ -2,6 +2,8 @@
 
 import { useRef, useEffect, KeyboardEvent } from 'react';
 import { Sparkles, Command } from 'lucide-react';
+import type { ImageVariants } from '@/lib/images/types';
+import type { UploadProgressCallback } from '@/lib/upload';
 import {
   AdminButton,
   AdminInput,
@@ -21,8 +23,9 @@ type ExpressAddBarProps = {
   imageUploading: boolean;
   onSubmit: () => void;
   onOpenComposer: () => void;
-  onUpload: (file: File, onProgress: (percent: number) => void) => Promise<string>;
+  onUpload: (file: File, onProgress: UploadProgressCallback) => Promise<{ url: string; variants: ImageVariants }>;
   onUploadStateChange: (uploading: boolean) => void;
+  onImageChange: (url: string, variants?: ImageVariants | null) => void;
 };
 
 export function ExpressAddBar({
@@ -36,6 +39,7 @@ export function ExpressAddBar({
   onOpenComposer,
   onUpload,
   onUploadStateChange,
+  onImageChange,
 }: ExpressAddBarProps) {
   const nameRef = useRef<HTMLInputElement>(null);
 
@@ -78,7 +82,7 @@ export function ExpressAddBar({
               compact
               primaryUrl={form.image_url}
               galleryUrls={[]}
-              onPrimaryChange={(url) => onChange({ image_url: url })}
+              onPrimaryChange={(url, variants) => onImageChange(url, variants)}
               onGalleryChange={() => {}}
               onUpload={onUpload}
               onUploadStateChange={onUploadStateChange}
@@ -152,7 +156,7 @@ export function ExpressAddBar({
                   ? 'Published'
                   : `${saveProgress}%`
                 : imageUploading
-                  ? 'Uploading…'
+                  ? 'Optimizing…'
                   : 'Publish'}
             </AdminButton>
             <AdminButton

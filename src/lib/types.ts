@@ -26,6 +26,10 @@ export interface ProductNote {
   created_at: string;
 }
 
+import type { ImageVariants } from './images/types';
+
+export type { ImageVariants };
+
 export interface Product {
   id: string;
   name: string;
@@ -45,7 +49,9 @@ export interface Product {
   is_new: boolean;
   is_limited: boolean;
   image_url: string;
+  image_variants?: ImageVariants | null;
   gallery_urls: string[];
+  gallery_image_variants?: (ImageVariants | null)[];
   created_at: string;
   updated_at: string;
 }

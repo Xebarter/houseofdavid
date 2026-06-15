@@ -1,4 +1,5 @@
 import type { Product } from '@/lib/types';
+import type { ImageVariants } from '@/lib/images/types';
 
 export const PERFUME_CATEGORIES = [
   { id: 'floral', name: 'Floral', description: '' },
@@ -11,6 +12,25 @@ export const PERFUME_CATEGORIES = [
 
 export const DEFAULT_IMAGE =
   'https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=800&q=80';
+
+const PLACEHOLDER_IMAGE_ID = 'photo-1594035910387-fea47794261f';
+
+/** True when the URL is empty or the built-in stock placeholder (not a user upload). */
+export function isPlaceholderImage(url: string | undefined | null): boolean {
+  const trimmed = url?.trim();
+  if (!trimmed) return true;
+  return trimmed === DEFAULT_IMAGE || trimmed.includes(PLACEHOLDER_IMAGE_ID);
+}
+
+/** Preview-only fallback for storefront and admin thumbnails. Never persist this as product data. */
+export function getDisplayImageUrl(url: string | undefined | null): string {
+  return isPlaceholderImage(url) ? DEFAULT_IMAGE : url!.trim();
+}
+
+/** Normalize a stored image URL for forms (treat placeholders as empty). */
+export function normalizeFormImageUrl(url: string | undefined | null): string {
+  return isPlaceholderImage(url) ? '' : url!.trim();
+}
 
 export const CONCENTRATIONS = [
   'Eau de Cologne',
@@ -80,7 +100,7 @@ export function productToForm(product: Product, defaultCategoryId: string, defau
     compare_at_price: product.compare_at_price?.toString() || '',
     category_id: product.category_id || defaultCategoryId,
     brand_id: product.brand_id || defaultBrandId,
-    image_url: product.image_url,
+    image_url: normalizeFormImageUrl(product.image_url),
     stock: product.stock.toString(),
     featured: product.featured,
     is_new: product.is_new,
@@ -102,7 +122,9 @@ export function validateProductForm(form: ProductFormData): string | null {
 
 export function buildProductPayload(
   form: ProductFormData,
-  galleryUrls: string[] = []
+  galleryUrls: string[] = [],
+  imageVariants: ImageVariants | null = null,
+  galleryImageVariants: (ImageVariants | null)[] = []
 ): Omit<Product, 'id' | 'created_at' | 'updated_at'> {
   const price = parseFloat(form.price);
   const stock = parseInt(form.stock, 10);
@@ -116,29 +138,42 @@ export function buildProductPayload(
     price: Number.isFinite(price) ? price : 0,
     category_id: form.category_id,
     brand_id: form.brand_id || '',
-    image_url: form.image_url.trim() || DEFAULT_IMAGE,
+    image_url: normalizeFormImageUrl(form.image_url),
+    image_variants: imageVariants,
     stock: Number.isFinite(stock) ? stock : 10,
     featured: form.featured,
     is_new: form.is_new,
     is_limited: form.is_limited,
     volume_ml: Number.isFinite(volume_ml) ? volume_ml : 50,
     concentration: form.concentration || 'Eau de Parfum',
-    compare_at_price: form.compare_at_price ? parseFloat(form.compare_at_price) : null,
-    year_launched: form.year_launched ? parseInt(form.year_launched, 10) : null,
+    compare_at_price: (() => {
+      const raw = form.compare_at_price.trim();
+      if (!raw) return null;
+      const value = parseFloat(raw);
+      return Number.isFinite(value) ? value : null;
+    })(),
+    year_launched: (() => {
+      const raw = form.year_launched.trim();
+      if (!raw) return null;
+      const value = parseInt(raw, 10);
+      return Number.isFinite(value) ? value : null;
+    })(),
     perfumer: form.perfumer.trim() || null,
-    gallery_urls: galleryUrls,
+    gallery_urls: galleryUrls.filter((url) => !isPlaceholderImage(url)),
+    gallery_image_variants: galleryImageVariants.length > 0 ? galleryImageVariants : undefined,
   };
 }
 
 export function formToPreviewProduct(
   form: ProductFormData,
   galleryUrls: string[] = [],
-  id = 'preview'
+  id = 'preview',
+  imageVariants: ImageVariants | null = null
 ): Product {
   const now = new Date().toISOString();
   return {
     id,
-    ...buildProductPayload(form, galleryUrls),
+    ...buildProductPayload(form, galleryUrls, imageVariants),
     created_at: now,
     updated_at: now,
   };
