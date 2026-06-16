@@ -7,6 +7,7 @@ import {
   BRAND_OG_IMAGE,
   BRAND_THEME_COLOR,
   BRAND_BACKGROUND_COLOR,
+  BRAND_FAVICON,
 } from '@/lib/brand';
 import { SITE_URL } from '@/lib/site';
 import './globals.css';
@@ -34,11 +35,11 @@ export const metadata: Metadata = {
   manifest: '/site.webmanifest',
   icons: {
     icon: [
-      { url: '/favicon.ico', sizes: 'any' },
-      { url: '/favicon.svg', type: 'image/svg+xml' },
-      { url: '/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
+      { url: BRAND_FAVICON.ico, sizes: 'any' },
+      { url: BRAND_FAVICON.svg, type: 'image/svg+xml' },
+      { url: BRAND_FAVICON.png96, sizes: '96x96', type: 'image/png' },
     ],
-    apple: '/apple-touch-icon.png',
+    apple: BRAND_FAVICON.apple,
   },
   appleWebApp: {
     capable: true,

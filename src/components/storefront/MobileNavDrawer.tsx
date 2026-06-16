@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { X, ChevronRight, User } from 'lucide-react';
 import { getStorefrontCatalog } from '@/lib/firestore';
+import { BRAND_NAME } from '@/lib/brand';
 import { BrandLogo } from '@/components/brand/BrandLogo';
 import { PERFUME_CATEGORIES } from '@/components/admin/products/productFormUtils';
 import { enrichCategories } from '@/lib/collections-utils';
@@ -97,7 +98,7 @@ export function MobileNavDrawer({ open, onClose }: MobileNavDrawerProps) {
             href="/"
             onClick={onClose}
             className="flex min-w-0 flex-1 items-center hover:opacity-90 transition-opacity"
-            aria-label="House of David home"
+            aria-label={`${BRAND_NAME} home`}
           >
             <BrandLogo
               size="sm"

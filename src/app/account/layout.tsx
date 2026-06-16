@@ -14,6 +14,8 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { BRAND_NAME } from '@/lib/brand';
+import { BrandLogo } from '@/components/brand/BrandLogo';
 import { Footer } from '@/components/storefront/Footer';
 import { Header } from '@/components/storefront/Header';
 import { Cart } from '@/components/storefront/Cart';
@@ -105,6 +107,9 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
         <div className="grid lg:grid-cols-[280px_1fr] gap-10">
           <aside className="border border-white/5 bg-luxury-charcoal/30 backdrop-blur-sm">
             <div className="p-6 border-b border-white/5">
+              <Link href="/" className="inline-flex hover:opacity-90 transition-opacity mb-5" aria-label={`${BRAND_NAME} home`}>
+                <BrandLogo size="sm" showName nameClassName="text-base" />
+              </Link>
               <p className="text-xs text-luxury-smoke">Signed in as</p>
               <p className="text-sm text-luxury-cream mt-1 line-clamp-1">{user.email}</p>
             </div>

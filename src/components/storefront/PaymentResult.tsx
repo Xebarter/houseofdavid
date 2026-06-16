@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Check, X } from 'lucide-react';
+import { BrandLogo } from '@/components/brand/BrandLogo';
 
 const POLL_INTERVAL_MS = 3000;
 const MAX_POLL_ATTEMPTS = 10;
@@ -100,6 +101,7 @@ export function PaymentResult() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black flex items-center justify-center p-4">
         <div className="bg-gray-800/50 rounded-2xl p-8 max-w-md w-full text-center border border-amber-900/50">
+          <BrandLogo size="md" showName className="justify-center mb-6" nameClassName="text-lg text-amber-50" />
           <div className="flex justify-center mb-6">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
           </div>
@@ -113,6 +115,7 @@ export function PaymentResult() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black flex items-center justify-center p-4">
       <div className="bg-gray-800/50 rounded-2xl p-8 max-w-md w-full text-center border border-amber-900/50">
+        <BrandLogo size="md" showName className="justify-center mb-6" nameClassName="text-lg text-amber-50" />
         {paymentSuccess ? (
           <>
             <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-amber-500/20 mb-4">

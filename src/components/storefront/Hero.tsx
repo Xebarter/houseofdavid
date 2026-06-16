@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { BRAND_NAME, BRAND_HERO_HEADLINE, BRAND_HERO_SUBLINE } from '@/lib/brand';
+import { BrandLogo } from '@/components/brand/BrandLogo';
 import { ChevronDown } from 'lucide-react';
 import type { Product } from '@/lib/types';
 import { getFeaturedProducts } from '@/lib/featured-products';
@@ -61,6 +62,12 @@ export function Hero({ products = [], loading = false, onOpenCart }: HeroProps) 
           }`}
         >
           <div className={showCarousel ? 'text-left order-1' : 'text-center'}>
+            <div
+              className={`mb-4 sm:mb-6 opacity-0 animate-fade-in-up ${showCarousel ? '' : 'flex justify-center'}`}
+              style={{ animationDelay: '0.05s', animationFillMode: 'forwards' }}
+            >
+              <BrandLogo size="sm" className={showCarousel ? '' : 'justify-center'} />
+            </div>
             <p
               className="luxury-label mb-4 sm:mb-6 opacity-0 animate-fade-in-up"
               style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}

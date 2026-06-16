@@ -47,8 +47,11 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     <div className="flex h-screen bg-gray-950">
       {/* Mobile header */}
       <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur border-b border-gray-800">
-        <div className="flex items-center justify-between px-4 h-14">
-          <p className="text-sm font-semibold text-stone-100">{activeItem.label}</p>
+        <div className="flex items-center justify-between px-4 h-14 gap-3">
+          <Link href="/admin" className="flex min-w-0 items-center gap-2.5 shrink">
+            <BrandLogo size="sm" src={BRAND_SIDEBAR_LOGO_SRC} framed className="shrink-0" />
+            <p className="text-sm font-semibold text-stone-100 truncate">{activeItem.label}</p>
+          </Link>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="p-2 rounded-lg text-gray-400 hover:text-stone-200 hover:bg-gray-800 transition-colors"

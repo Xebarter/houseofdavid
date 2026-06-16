@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { BRAND_LOGO_SRC, BRAND_NAME } from '@/lib/brand';
+import { BRAND_ICON_SRC, BRAND_NAME } from '@/lib/brand';
 
 const SIZE_MAP = {
   sm: 32,
@@ -30,7 +30,7 @@ export function BrandLogo({
   nameClassName = '',
   className = '',
   imageClassName = '',
-  src = BRAND_LOGO_SRC,
+  src = BRAND_ICON_SRC,
   framed = false,
   priority = false,
 }: BrandLogoProps) {

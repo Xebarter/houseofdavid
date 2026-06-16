@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { ArrowLeft, Download } from 'lucide-react';
 import { getMyOrderDetails } from '@/lib/account-api';
-import { BRAND_NAME } from '@/lib/brand';
+import { BrandLogo } from '@/components/brand/BrandLogo';
 import { formatCurrency } from '@/lib/format';
 
 export default function AccountInvoicePage() {
@@ -89,9 +89,8 @@ export default function AccountInvoicePage() {
       <div className="mt-10 border border-white/5 bg-luxury-black/25 p-8 print:bg-white print:text-black print:border-black/10">
         <div className="flex items-start justify-between gap-6">
           <div>
-            <p className="text-[11px] uppercase tracking-wideish text-luxury-smoke print:text-black/60">From</p>
-            <p className="luxury-heading text-2xl font-light mt-2 print:text-black">{BRAND_NAME}</p>
-            <p className="text-sm text-luxury-smoke mt-2 print:text-black/70">Premium Fragrance House</p>
+            <BrandLogo size="md" showName className="mb-4 print:mb-3" nameClassName="text-xl print:text-black" />
+            <p className="text-sm text-luxury-smoke print:text-black/70">Premium Fragrance House</p>
           </div>
           <div className="text-right">
             <p className="text-[11px] uppercase tracking-wideish text-luxury-smoke print:text-black/60">Invoice</p>
