@@ -1,6 +1,7 @@
 export const BRAND_NAME = 'House of David';
 export const BRAND_TAGLINE = 'Luxury fragrance collection';
 export const BRAND_LOGO_SRC = '/favicon-96x96.png';
+export const BRAND_SIDEBAR_LOGO_SRC = '/apple-touch-icon.png';
 export const BRAND_ICON_SRC = '/favicon.svg';
 export const BRAND_OG_IMAGE = '/web-app-manifest-512x512.png';
 export const BRAND_THEME_COLOR = '#080808';

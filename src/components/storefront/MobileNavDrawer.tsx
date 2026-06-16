@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { X, ChevronRight, User } from 'lucide-react';
 import { getStorefrontCatalog } from '@/lib/firestore';
+import { BRAND_SIDEBAR_LOGO_SRC } from '@/lib/brand';
 import { BrandLogo } from '@/components/brand/BrandLogo';
 import { PERFUME_CATEGORIES } from '@/components/admin/products/productFormUtils';
 import { enrichCategories } from '@/lib/collections-utils';
@@ -92,16 +93,28 @@ export function MobileNavDrawer({ open, onClose }: MobileNavDrawerProps) {
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-luxury-gold/40 to-transparent" />
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 h-20 border-b border-white/5 shrink-0">
-          <div className="flex flex-col items-start justify-center gap-1">
-            <p className="luxury-label text-[10px] leading-none">Menu</p>
-            <BrandLogo size="sm" showName nameClassName="text-base" />
-          </div>
+        <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-4 min-h-[4.5rem] border-b border-white/5 shrink-0 pt-[max(1rem,env(safe-area-inset-top))]">
+          <Link
+            href="/"
+            onClick={onClose}
+            className="flex min-w-0 flex-1 items-center hover:opacity-90 transition-opacity"
+            aria-label="House of David home"
+          >
+            <BrandLogo
+              size="sm"
+              src={BRAND_SIDEBAR_LOGO_SRC}
+              framed
+              showName
+              priority
+              className="min-w-0"
+              nameClassName="text-sm leading-tight"
+            />
+          </Link>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close menu"
-            className="w-10 h-10 flex items-center justify-center border border-white/10 text-luxury-cream/80 hover:text-luxury-cream hover:border-luxury-gold/30 transition-colors"
+            className="w-10 h-10 shrink-0 flex items-center justify-center border border-white/10 text-luxury-cream/80 hover:text-luxury-cream hover:border-luxury-gold/30 transition-colors"
           >
             <X size={20} strokeWidth={1.25} />
           </button>

@@ -16,7 +16,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { BRAND_NAME } from '@/lib/brand';
+import { BRAND_NAME, BRAND_SIDEBAR_LOGO_SRC } from '@/lib/brand';
 import { BrandLogo } from '@/components/brand/BrandLogo';
 
 const navItems = [
@@ -75,12 +75,18 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         <Link
           href="/admin"
           onClick={() => setMobileMenuOpen(false)}
-          className="flex items-center gap-3 px-5 pt-14 pb-5 lg:pt-5 border-b border-gray-800 shrink-0 hover:bg-gray-800/40 transition-colors"
+          className="flex items-center gap-3 px-4 pt-14 pb-4 lg:pt-4 lg:px-5 lg:pb-5 border-b border-gray-800 shrink-0 hover:bg-gray-800/40 transition-colors"
         >
-          <BrandLogo size="md" className="shrink-0" />
+          <BrandLogo
+            size="md"
+            src={BRAND_SIDEBAR_LOGO_SRC}
+            framed
+            priority
+            className="shrink-0"
+          />
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-stone-100 leading-tight truncate">{BRAND_NAME}</p>
-            <p className="text-xs text-gray-500 mt-0.5">Administration</p>
+            <p className="text-sm font-semibold text-stone-100 leading-snug">{BRAND_NAME}</p>
+            <p className="text-[11px] text-gray-500 mt-0.5 uppercase tracking-wide">Admin</p>
           </div>
         </Link>
 
