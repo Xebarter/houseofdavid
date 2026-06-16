@@ -165,7 +165,7 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
   return (
     <Link href={productPath(product)} className="group block">
       <article>
-        <div className="relative aspect-[3/4] overflow-hidden bg-luxury-charcoal border border-white/5 group-hover:border-luxury-gold/20 transition-colors duration-500 mb-5">
+        <div className="relative aspect-[3/4] overflow-hidden bg-luxury-charcoal border border-white/5 group-hover:border-luxury-gold/20 transition-colors duration-500 mb-3 sm:mb-5">
           <OptimizedImage
             src={product.image_url || DEFAULT_PRODUCT_IMAGE}
             variants={product.image_variants}
@@ -187,7 +187,7 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
           <button
             type="button"
             onClick={handleAddToCart}
-            className="absolute bottom-0 left-0 right-0 z-10 py-3.5 text-[11px] uppercase tracking-wideish text-luxury-cream bg-luxury-black/85 backdrop-blur-sm translate-y-full group-hover:translate-y-0 transition-transform duration-500 hover:bg-luxury-gold hover:text-luxury-black"
+            className="absolute bottom-0 left-0 right-0 z-10 py-3.5 text-[11px] uppercase tracking-wideish text-luxury-cream bg-luxury-black/85 backdrop-blur-sm translate-y-0 md:translate-y-full md:group-hover:translate-y-0 transition-transform duration-500 hover:bg-luxury-gold hover:text-luxury-black min-h-[44px]"
           >
             {added ? 'Added' : 'Add to bag'}
           </button>
@@ -197,7 +197,7 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
           <p className="text-[10px] uppercase tracking-wideish text-luxury-gold-muted">
             {product.concentration} · {product.volume_ml}ml
           </p>
-          <h3 className="luxury-heading text-base sm:text-lg font-medium group-hover:text-luxury-gold-light transition-colors line-clamp-1">
+          <h3 className="luxury-heading text-sm sm:text-lg font-medium group-hover:text-luxury-gold-light transition-colors line-clamp-2 sm:line-clamp-1">
             {product.name}
           </h3>
           <div className="flex items-baseline gap-2">

@@ -48,7 +48,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       {/* Mobile header */}
       <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur border-b border-gray-800">
         <div className="flex items-center justify-between px-4 h-14">
-          <BrandLogo size="sm" showName nameClassName="text-sm font-semibold text-stone-100" />
+          <p className="text-sm font-semibold text-stone-100">{activeItem.label}</p>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="p-2 rounded-lg text-gray-400 hover:text-stone-200 hover:bg-gray-800 transition-colors"
@@ -72,15 +72,19 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         } flex flex-col`}
       >
-        <div className="hidden lg:flex items-center gap-3 px-5 py-5 border-b border-gray-800">
-          <BrandLogo size="sm" />
-          <div className="min-w-0">
-            <h1 className="text-base font-semibold text-stone-100 truncate">{BRAND_NAME}</h1>
-            <p className="text-xs text-gray-500">Administration</p>
+        <Link
+          href="/admin"
+          onClick={() => setMobileMenuOpen(false)}
+          className="flex items-center gap-3 px-5 pt-14 pb-5 lg:pt-5 border-b border-gray-800 shrink-0 hover:bg-gray-800/40 transition-colors"
+        >
+          <BrandLogo size="md" className="shrink-0" />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-stone-100 leading-tight truncate">{BRAND_NAME}</p>
+            <p className="text-xs text-gray-500 mt-0.5">Administration</p>
           </div>
-        </div>
+        </Link>
 
-        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto admin-scrollbar mt-14 lg:mt-0">
+        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto admin-scrollbar">
           {navItems.map(({ id, label, icon: Icon, href }) => {
             const isActive = activeItem.id === id;
             return (

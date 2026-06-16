@@ -111,8 +111,8 @@ export function HeroFeaturedCarousel({
         <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-luxury-gold/55 to-transparent" />
         <div className="absolute inset-x-6 bottom-0 h-px bg-gradient-to-r from-transparent via-luxury-gold/20 to-transparent" />
 
-        <div className="p-5 sm:p-7">
-          <div className="flex items-center justify-between mb-5">
+        <div className="p-4 sm:p-7">
+          <div className="flex items-center justify-between mb-4 sm:mb-5">
             <p className="luxury-label text-[10px] sm:text-xs">Featured Selection</p>
             {badge && (
               <span className="luxury-label text-[9px] text-luxury-gold border border-luxury-gold/30 px-2.5 py-1 bg-luxury-black/50">
@@ -122,7 +122,7 @@ export function HeroFeaturedCarousel({
           </div>
 
           <div key={product.id} className="animate-hero-slide-in">
-            <div className="relative aspect-[4/5] overflow-hidden border border-white/5 bg-luxury-charcoal mb-6">
+            <div className="relative aspect-[3/4] sm:aspect-[4/5] overflow-hidden border border-white/5 bg-luxury-charcoal mb-4 sm:mb-6">
               <OptimizedImage
                 src={product.image_url || DEFAULT_PRODUCT_IMAGE}
                 variants={product.image_variants}
@@ -141,7 +141,7 @@ export function HeroFeaturedCarousel({
               </p>
               <Link
                 href={productPath(product)}
-                className="luxury-heading text-2xl sm:text-3xl font-light leading-tight hover:text-luxury-gold-light transition-colors duration-300 block"
+                className="luxury-heading text-xl sm:text-3xl font-light leading-tight hover:text-luxury-gold-light transition-colors duration-300 block"
               >
                 {product.name}
               </Link>
@@ -160,18 +160,18 @@ export function HeroFeaturedCarousel({
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col gap-3">
               <button
                 type="button"
                 onClick={handleBuyNow}
-                className="luxury-btn-primary flex-1 min-h-[46px]"
+                className="luxury-btn-primary w-full min-h-[48px]"
               >
                 Buy Now
               </button>
               <button
                 type="button"
                 onClick={handleAddToBag}
-                className="flex-1 min-h-[46px] inline-flex items-center justify-center px-6 text-xs font-medium uppercase tracking-wideish border border-white/15 text-luxury-cream/90 hover:border-luxury-gold/40 hover:text-luxury-cream transition-all duration-500"
+                className="w-full min-h-[48px] inline-flex items-center justify-center px-6 text-xs font-medium uppercase tracking-wideish border border-white/15 text-luxury-cream/90 hover:border-luxury-gold/40 hover:text-luxury-cream transition-all duration-500"
               >
                 {added ? 'Added to Bag' : 'Add to Bag'}
               </button>

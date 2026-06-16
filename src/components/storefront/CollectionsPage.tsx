@@ -169,7 +169,7 @@ function CollectionsContent() {
 
       <main className="pt-20">
         {/* Hero — shoppable featured carousel (same pattern as home) */}
-        <section className="relative min-h-[85vh] lg:min-h-screen flex items-center overflow-hidden border-b border-white/5">
+        <section className="relative lg:min-h-screen flex items-center overflow-hidden border-b border-white/5">
           <div className="absolute inset-0">
             <div
               className="absolute inset-0 bg-cover bg-center animate-slow-zoom"
@@ -187,16 +187,16 @@ function CollectionsContent() {
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_50%,rgba(201,169,98,0.08),transparent_55%)]" />
           </div>
 
-          <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-8 py-16 sm:py-24 lg:py-28">
+          <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-8 py-12 sm:py-24 lg:py-28">
             <div
-              className={`grid gap-12 lg:gap-16 items-center ${
+              className={`grid gap-8 sm:gap-12 lg:gap-16 items-center ${
                 showHeroCarousel || loading
                   ? 'lg:grid-cols-[1fr_minmax(300px,420px)]'
                   : 'max-w-4xl'
               }`}
             >
-              <div>
-                <nav className="flex items-center gap-2 text-[11px] uppercase tracking-wideish text-luxury-smoke mb-8">
+              <div className="order-1">
+                <nav className="flex items-center gap-2 text-[11px] uppercase tracking-wideish text-luxury-smoke mb-6 sm:mb-8">
                   <Link href="/" className="hover:text-luxury-cream transition-colors">
                     Home
                   </Link>
@@ -205,19 +205,18 @@ function CollectionsContent() {
                 </nav>
 
                 <p className="luxury-label mb-4">{BRAND_NAME}</p>
-                <h1 className="luxury-heading text-4xl sm:text-5xl md:text-6xl font-light leading-tight max-w-3xl mb-6">
+                <h1 className="luxury-heading text-3xl sm:text-5xl md:text-6xl font-light leading-tight max-w-3xl mb-4 sm:mb-6">
                   {activeCategoryLabel !== 'All' ? activeCategoryLabel : 'The Collection'}
                 </h1>
                 <div className="luxury-divider max-w-xs mb-6" />
-                <p className="text-base sm:text-lg text-luxury-cream/70 font-light max-w-xl leading-relaxed mb-8">
-                  Shop signature compositions — buy directly from the hero or explore the full
-                  catalog below.
+                <p className="text-sm sm:text-lg text-luxury-cream/70 font-light max-w-xl leading-relaxed mb-6 sm:mb-8">
+                  Shop signature compositions — buy from the hero or browse the catalog below.
                 </p>
 
                 {!loading && (
-                  <div className="flex flex-wrap gap-8 sm:gap-12 mb-8">
+                  <div className="flex gap-6 sm:gap-12 mb-6 sm:mb-8">
                     <div>
-                      <p className="text-2xl sm:text-3xl text-luxury-cream font-light tabular-nums">
+                      <p className="text-xl sm:text-3xl text-luxury-cream font-light tabular-nums">
                         {products.length}
                       </p>
                       <p className="text-[10px] uppercase tracking-wideish text-luxury-gold-muted mt-1">
@@ -225,7 +224,7 @@ function CollectionsContent() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-2xl sm:text-3xl text-luxury-cream font-light tabular-nums">
+                      <p className="text-xl sm:text-3xl text-luxury-cream font-light tabular-nums">
                         {categoriesWithMeta.filter((c) => c.productCount > 0).length ||
                           categoriesWithMeta.length}
                       </p>
@@ -239,15 +238,15 @@ function CollectionsContent() {
                 <button
                   type="button"
                   onClick={scrollToCatalog}
-                  className="luxury-btn-primary min-w-[200px]"
+                  className="luxury-btn-primary w-full sm:w-auto sm:min-w-[200px]"
                 >
                   Browse All
                 </button>
               </div>
 
               {loading && (
-                <div className="w-full max-w-md lg:max-w-none mx-auto">
-                  <div className="border border-white/10 bg-luxury-black/40 backdrop-blur-xl p-6 sm:p-8">
+                <div className="w-full max-w-md lg:max-w-none mx-auto order-2">
+                  <div className="border border-white/10 bg-luxury-black/40 backdrop-blur-xl p-4 sm:p-8">
                     <div className="h-3 w-28 bg-white/5 rounded animate-pulse mb-6" />
                     <div className="aspect-[4/5] bg-white/5 animate-pulse mb-6" />
                     <div className="h-8 w-3/4 bg-white/5 rounded animate-pulse mb-3" />
@@ -261,11 +260,13 @@ function CollectionsContent() {
               )}
 
               {showHeroCarousel && (
-                <HeroFeaturedCarousel
-                  products={heroFeatured}
-                  onOpenCart={() => setShowCart(true)}
-                  onActiveProductChange={setActiveHeroProduct}
-                />
+                <div className="order-2 max-lg:max-w-md max-lg:mx-auto w-full">
+                  <HeroFeaturedCarousel
+                    products={heroFeatured}
+                    onOpenCart={() => setShowCart(true)}
+                    onActiveProductChange={setActiveHeroProduct}
+                  />
+                </div>
               )}
             </div>
           </div>
@@ -274,7 +275,7 @@ function CollectionsContent() {
             type="button"
             onClick={scrollToCatalog}
             aria-label="Scroll to catalog"
-            className="absolute bottom-8 left-1/2 -translate-x-1/2 text-luxury-gold-muted animate-scroll-hint z-10"
+            className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 text-luxury-gold-muted animate-scroll-hint z-10 hidden sm:block"
           >
             <ChevronDown className="h-6 w-6" strokeWidth={1} />
           </button>
@@ -282,8 +283,8 @@ function CollectionsContent() {
 
         {/* Category showcase — hidden when a specific category is selected */}
         {!loading && categoryParam === 'all' && !queryParam && categoriesWithMeta.length > 0 && (
-          <section className="py-16 sm:py-20 bg-luxury-charcoal border-b border-white/5">
-            <div className="max-w-7xl mx-auto px-6 sm:px-8">
+          <section className="py-10 sm:py-20 bg-luxury-charcoal border-b border-white/5">
+            <div className="max-w-7xl mx-auto px-4 sm:px-8">
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10">
                 <div>
                   <p className="luxury-label mb-2">Browse by Family</p>
@@ -332,8 +333,8 @@ function CollectionsContent() {
         )}
 
         {/* Toolbar + catalog */}
-        <section id="collection-catalog" className="sticky top-20 z-30 bg-luxury-black/95 backdrop-blur-md border-b border-white/5">
-          <div className="max-w-7xl mx-auto px-6 sm:px-8 py-4">
+        <section id="collection-catalog" className="sticky top-20 z-30 bg-luxury-black/95 backdrop-blur-md border-b border-white/5 supports-[backdrop-filter]:bg-luxury-black/80">
+          <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3 sm:py-4">
             <div className="flex flex-col lg:flex-row lg:items-center gap-4">
               <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-md">
                 <Search
@@ -345,7 +346,7 @@ function CollectionsContent() {
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   placeholder="Search fragrances…"
-                  className="w-full pl-10 pr-4 py-2.5 bg-luxury-charcoal/80 border border-white/10 text-sm text-luxury-cream placeholder:text-luxury-smoke focus:outline-none focus:border-luxury-gold/40 transition-colors"
+                  className="w-full min-h-[44px] pl-10 pr-4 py-2.5 text-base sm:text-sm bg-luxury-charcoal/80 border border-white/10 text-luxury-cream placeholder:text-luxury-smoke focus:outline-none focus:border-luxury-gold/40 transition-colors"
                 />
               </form>
 
@@ -353,7 +354,7 @@ function CollectionsContent() {
                 <button
                   type="button"
                   onClick={() => setMobileFiltersOpen((v) => !v)}
-                  className="lg:hidden inline-flex items-center gap-2 px-4 py-2.5 border border-white/10 text-xs uppercase tracking-wideish text-luxury-cream/80"
+                  className="lg:hidden inline-flex items-center gap-2 min-h-[44px] px-4 py-2.5 border border-white/10 text-xs uppercase tracking-wideish text-luxury-cream/80"
                 >
                   <SlidersHorizontal className="h-4 w-4" strokeWidth={1.25} />
                   Filters
@@ -362,7 +363,7 @@ function CollectionsContent() {
                 <select
                   value={sortParam}
                   onChange={(e) => updateParams({ sort: e.target.value })}
-                  className="px-4 py-2.5 bg-luxury-charcoal/80 border border-white/10 text-xs uppercase tracking-wideish text-luxury-cream/80 focus:outline-none focus:border-luxury-gold/40"
+                  className="min-h-[44px] px-4 py-2.5 bg-luxury-charcoal/80 border border-white/10 text-xs uppercase tracking-wideish text-luxury-cream/80 focus:outline-none focus:border-luxury-gold/40"
                   aria-label="Sort products"
                 >
                   {COLLECTION_SORT_OPTIONS.map((opt) => (
@@ -409,11 +410,11 @@ function CollectionsContent() {
             <div
               className={`${mobileFiltersOpen ? 'block' : 'hidden'} lg:block mt-4 pt-4 border-t border-white/5 lg:border-0 lg:pt-0 lg:mt-4`}
             >
-              <div className="flex flex-wrap gap-x-6 gap-y-2">
+              <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-none snap-x snap-mandatory lg:flex-wrap lg:overflow-visible lg:pb-0">
                 <button
                   type="button"
                   onClick={() => updateParams({ category: null })}
-                  className={`text-xs uppercase tracking-wideish pb-1 border-b transition-colors ${
+                  className={`shrink-0 snap-start min-h-[40px] text-xs uppercase tracking-wideish pb-1 border-b transition-colors ${
                     categoryParam === 'all'
                       ? 'text-luxury-gold border-luxury-gold'
                       : 'text-luxury-smoke border-transparent hover:text-luxury-cream'
@@ -431,7 +432,7 @@ function CollectionsContent() {
                         updateParams({ category: category.id });
                         setMobileFiltersOpen(false);
                       }}
-                      className={`text-xs uppercase tracking-wideish pb-1 border-b transition-colors ${
+                      className={`shrink-0 snap-start min-h-[40px] text-xs uppercase tracking-wideish pb-1 border-b transition-colors ${
                         categoryParam === category.id
                           ? 'text-luxury-gold border-luxury-gold'
                           : 'text-luxury-smoke border-transparent hover:text-luxury-cream'
@@ -468,8 +469,8 @@ function CollectionsContent() {
         </section>
 
         {/* Product grid */}
-        <section className="py-12 sm:py-16">
-          <div className="max-w-7xl mx-auto px-6 sm:px-8">
+        <section className="py-10 sm:py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-8">
             <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-2 mb-10">
               <div>
                 <h2 className="luxury-heading text-2xl sm:text-3xl font-light">
@@ -489,7 +490,7 @@ function CollectionsContent() {
             </div>
 
             {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-3 gap-y-8 sm:gap-x-6 sm:gap-y-12">
                 {Array.from({ length: 8 }).map((_, i) => (
                   <div key={i}>
                     <div className="aspect-[3/4] bg-white/5 animate-pulse mb-5" />
@@ -509,7 +510,7 @@ function CollectionsContent() {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-12">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-3 gap-y-8 sm:gap-x-6 sm:gap-y-12">
                 {filteredProducts.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
@@ -519,8 +520,8 @@ function CollectionsContent() {
         </section>
 
         {/* Concierge CTA */}
-        <section className="border-t border-white/5 bg-luxury-charcoal py-16 sm:py-20">
-          <div className="max-w-3xl mx-auto px-6 sm:px-8 text-center">
+        <section className="border-t border-white/5 bg-luxury-charcoal py-12 sm:py-20">
+          <div className="max-w-3xl mx-auto px-4 sm:px-8 text-center">
             <p className="luxury-label mb-4">Personal Guidance</p>
             <h2 className="luxury-heading text-2xl sm:text-3xl font-light mb-4">
               Need help choosing a signature scent?
@@ -533,7 +534,7 @@ function CollectionsContent() {
               <Link href="/about" className="luxury-btn-ghost">
                 Our Heritage
               </Link>
-              <Link href="/journal" className="luxury-btn-primary min-w-[200px]">
+              <Link href="/journal" className="luxury-btn-primary w-full sm:w-auto sm:min-w-[200px]">
                 Read the Journal
               </Link>
             </div>

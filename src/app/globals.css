@@ -33,14 +33,23 @@
     @apply inline-flex items-center justify-center px-8 py-3.5 text-xs font-medium uppercase tracking-wideish
       border border-luxury-gold/60 text-luxury-cream bg-transparent
       hover:bg-luxury-gold hover:text-luxury-black hover:border-luxury-gold
-      transition-all duration-500;
+      transition-all duration-500 min-h-[48px];
   }
 
   .luxury-btn-ghost {
     @apply inline-flex items-center justify-center px-8 py-3.5 text-xs font-medium uppercase tracking-wideish
       text-luxury-cream/80 hover:text-luxury-cream
       border-b border-transparent hover:border-luxury-gold/50
-      transition-all duration-300;
+      transition-all duration-300 min-h-[48px];
+  }
+
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
   }
 }
 

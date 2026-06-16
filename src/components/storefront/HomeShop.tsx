@@ -29,26 +29,21 @@ export function HomeShop({ catalog }: HomeShopProps) {
 
   return (
     <div className="bg-luxury-black">
-      {/* Editorial spotlight */}
       {!loading && featured.length > 0 && (
         <section className="border-t border-white/5">
-          <div className="max-w-7xl mx-auto px-6 sm:px-8 py-16 sm:py-24">
-            <div className="flex items-center justify-between mb-10 sm:mb-14">
+          <div className="max-w-7xl mx-auto px-4 sm:px-8 py-12 sm:py-24">
+            <div className="flex items-center justify-between mb-8 sm:mb-14">
               <p className="luxury-label">Signature</p>
               <Link
                 href="/collections"
-                className="hidden sm:inline-flex items-center gap-2 text-[11px] uppercase tracking-wideish text-luxury-smoke hover:text-luxury-gold transition-colors duration-300"
+                className="inline-flex items-center gap-2 text-[11px] uppercase tracking-wideish text-luxury-smoke hover:text-luxury-gold transition-colors duration-300 min-h-[44px]"
               >
                 View collection
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
 
-            <div
-              className={`grid gap-8 lg:gap-10 ${
-                featured.length === 1 ? 'max-w-2xl' : 'sm:grid-cols-2'
-              }`}
-            >
+            <div className={`grid gap-6 sm:gap-10 ${featured.length === 1 ? 'max-w-2xl' : 'grid-cols-1 sm:grid-cols-2'}`}>
               {featured.map((product) => (
                 <ProductCard key={product.id} product={product} variant="showcase" />
               ))}
@@ -57,20 +52,19 @@ export function HomeShop({ catalog }: HomeShopProps) {
         </section>
       )}
 
-      {/* Shop grid */}
       <section id="collection" className="border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 py-16 sm:py-24">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-10 sm:mb-14">
-            <h2 className="luxury-heading text-2xl sm:text-3xl font-light tracking-tight">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-12 sm:py-24">
+          <div className="flex flex-col gap-4 sm:gap-6 mb-8 sm:mb-14">
+            <h2 className="luxury-heading text-xl sm:text-3xl font-light tracking-tight">
               Shop
             </h2>
 
             {categories.length > 0 && (
-              <div className="flex gap-6 overflow-x-auto pb-1 -mx-6 px-6 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible scrollbar-none">
+              <div className="flex gap-4 sm:gap-6 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible scrollbar-none snap-x snap-mandatory">
                 <button
                   type="button"
                   onClick={() => setSelectedCategory('all')}
-                  className={`shrink-0 text-[11px] uppercase tracking-wideish pb-1 border-b transition-colors duration-300 ${
+                  className={`shrink-0 snap-start min-h-[44px] px-1 text-[11px] uppercase tracking-wideish pb-1 border-b transition-colors duration-300 ${
                     selectedCategory === 'all'
                       ? 'text-luxury-gold border-luxury-gold'
                       : 'text-luxury-smoke border-transparent hover:text-luxury-cream'
@@ -83,7 +77,7 @@ export function HomeShop({ catalog }: HomeShopProps) {
                     key={category.id}
                     type="button"
                     onClick={() => setSelectedCategory(category.id)}
-                    className={`shrink-0 text-[11px] uppercase tracking-wideish pb-1 border-b transition-colors duration-300 ${
+                    className={`shrink-0 snap-start min-h-[44px] px-1 text-[11px] uppercase tracking-wideish pb-1 border-b transition-colors duration-300 ${
                       selectedCategory === category.id
                         ? 'text-luxury-gold border-luxury-gold'
                         : 'text-luxury-smoke border-transparent hover:text-luxury-cream'
@@ -97,28 +91,28 @@ export function HomeShop({ catalog }: HomeShopProps) {
           </div>
 
           {loading ? (
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-12 sm:gap-x-8 sm:gap-y-16">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-8 sm:gap-x-8 sm:gap-y-16">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i}>
-                  <div className="aspect-[3/4] bg-white/5 animate-pulse mb-5" />
+                  <div className="aspect-[3/4] bg-white/5 animate-pulse mb-3 sm:mb-5" />
                   <div className="h-3 w-20 bg-white/5 animate-pulse mb-2" />
                   <div className="h-4 w-32 bg-white/5 animate-pulse" />
                 </div>
               ))}
             </div>
           ) : gridProducts.length === 0 ? (
-            <p className="text-center text-sm text-luxury-smoke py-16">Nothing in this category.</p>
+            <p className="text-center text-sm text-luxury-smoke py-12 sm:py-16">Nothing in this category.</p>
           ) : (
             <>
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-12 sm:gap-x-8 sm:gap-y-16">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-3 gap-y-8 sm:gap-x-8 sm:gap-y-16">
                 {gridProducts.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
               </div>
 
               {(hasMore || selectedCategory === 'all') && (
-                <div className="mt-16 sm:mt-20 text-center">
-                  <Link href="/collections" className="luxury-btn-primary">
+                <div className="mt-12 sm:mt-20 text-center">
+                  <Link href="/collections" className="luxury-btn-primary w-full sm:w-auto">
                     View all fragrances
                   </Link>
                 </div>
