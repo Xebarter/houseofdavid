@@ -93,9 +93,9 @@ export function MobileNavDrawer({ open, onClose }: MobileNavDrawerProps) {
 
         {/* Header */}
         <div className="flex items-center justify-between px-6 h-20 border-b border-white/5 shrink-0">
-          <div>
-            <p className="luxury-label text-[10px]">Menu</p>
-            <BrandLogo size="sm" showName nameClassName="text-lg" />
+          <div className="flex flex-col items-start justify-center gap-1">
+            <p className="luxury-label text-[10px] leading-none">Menu</p>
+            <BrandLogo size="sm" showName nameClassName="text-base" />
           </div>
           <button
             type="button"

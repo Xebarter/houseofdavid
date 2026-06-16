@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { mapPaytotaStatus } from '@/lib/paytota';
-import { updateOrderStatus } from '@/lib/firestore';
+import { updateOrderStatus } from '@/lib/firestore-server';
 
 function verifySignature(publicKeyPem: string, body: string, signature: string): boolean {
   try {

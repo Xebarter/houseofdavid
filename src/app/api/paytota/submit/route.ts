@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createPurchase } from '@/lib/paytota';
-import { createOrderWithItems, updateOrderPaymentIntent } from '@/lib/firestore';
+import { createOrderWithItems, updateOrderPaymentIntent } from '@/lib/firestore-server';
 import type { CreateOrderInput } from '@/lib/types';
 
 export async function POST(request: NextRequest) {

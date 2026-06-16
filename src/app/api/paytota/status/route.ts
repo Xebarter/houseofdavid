@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPurchaseStatus, mapPaytotaStatus, isPaytotaPaymentSuccessful } from '@/lib/paytota';
-import { updateOrderStatus, getOrderById } from '@/lib/firestore';
+import { updateOrderStatus, getOrderById } from '@/lib/firestore-server';
 
 export async function GET(request: NextRequest) {
   try {

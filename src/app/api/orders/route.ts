@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createOrderWithItems } from '@/lib/firestore';
+import { createOrderWithItems } from '@/lib/firestore-server';
 import type { CreateOrderInput } from '@/lib/types';
 import { getAdminDb } from '@/lib/firebase-admin';
 import { verifyUserRequest } from '@/lib/user-request';
