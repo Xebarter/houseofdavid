@@ -54,22 +54,14 @@ export function Header({ onCartClick }: HeaderProps) {
           <div className="flex items-center justify-between h-16 sm:h-20 gap-3">
             <button
               onClick={() => router.push('/')}
-              className="flex min-w-0 max-w-[calc(100%-9.5rem)] sm:max-w-none items-center hover:opacity-90 transition-opacity"
+              className="flex min-w-0 flex-1 items-center overflow-hidden hover:opacity-90 transition-opacity sm:flex-none sm:max-w-none"
               aria-label={`${BRAND_NAME} home`}
             >
               <BrandLogo
-                size="sm"
                 showName
-                priority
-                className="min-w-0 sm:hidden"
-                nameClassName="text-sm leading-tight"
-              />
-              <BrandLogo
-                size="md"
-                showName
-                priority
-                className="hidden min-w-0 sm:inline-flex sm:gap-3"
-                nameClassName="text-lg sm:text-xl lg:text-2xl"
+                className="min-w-0 max-w-full"
+                markClassName="h-7 w-7 sm:h-10 sm:w-10"
+                nameClassName="text-xs sm:text-lg lg:text-2xl leading-tight"
               />
             </button>
 

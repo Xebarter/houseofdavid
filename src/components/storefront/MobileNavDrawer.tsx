@@ -101,11 +101,10 @@ export function MobileNavDrawer({ open, onClose }: MobileNavDrawerProps) {
             aria-label={`${BRAND_NAME} home`}
           >
             <BrandLogo
-              size="sm"
               showName
-              priority
-              className="min-w-0"
-              nameClassName="text-sm leading-tight"
+              className="min-w-0 max-w-full"
+              markClassName="h-7 w-7"
+              nameClassName="text-xs leading-tight"
             />
           </Link>
           <button

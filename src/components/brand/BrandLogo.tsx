@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import { BRAND_ICON_SRC, BRAND_NAME } from '@/lib/brand';
 
 const SIZE_MAP = {
@@ -19,9 +18,9 @@ type BrandLogoProps = {
   nameClassName?: string;
   className?: string;
   imageClassName?: string;
+  markClassName?: string;
   src?: string;
   framed?: boolean;
-  priority?: boolean;
 };
 
 export function BrandLogo({
@@ -30,33 +29,51 @@ export function BrandLogo({
   nameClassName = '',
   className = '',
   imageClassName = '',
+  markClassName = '',
   src = BRAND_ICON_SRC,
   framed = false,
-  priority = false,
 }: BrandLogoProps) {
   const px = SIZE_MAP[size];
+  const markSizeClass = markClassName || SIZE_CLASS[size];
+  const isResponsiveMark = Boolean(markClassName);
 
   const image = (
-    <Image
+  // Native img keeps static /public brand marks pixel-stable in production (no optimizer variance).
+  // eslint-disable-next-line @next/next/no-img-element
+    <img
       src={src}
       alt={showName ? '' : BRAND_NAME}
       aria-hidden={showName || undefined}
-      width={px}
-      height={px}
-      priority={priority}
-      className={`block shrink-0 object-contain ${framed ? 'h-full w-full' : SIZE_CLASS[size]} ${imageClassName}`}
+      width={isResponsiveMark ? undefined : px}
+      height={isResponsiveMark ? undefined : px}
+      decoding="async"
+      className={`block h-full w-full max-h-full max-w-full object-contain ${imageClassName}`}
+      style={
+        isResponsiveMark || framed
+          ? undefined
+          : { width: px, height: px, minWidth: px, minHeight: px, maxWidth: px, maxHeight: px }
+      }
     />
   );
 
   const mark = framed ? (
     <span
-      className="flex shrink-0 items-center justify-center rounded-lg border border-white/10 bg-luxury-black/40 p-1"
-      style={{ width: px + 8, height: px + 8 }}
+      className="relative flex shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/10 bg-luxury-black/40 p-1"
+      style={{ width: px + 8, height: px + 8, minWidth: px + 8, minHeight: px + 8 }}
     >
       {image}
     </span>
   ) : (
-    image
+    <span
+      className={`relative block shrink-0 overflow-hidden ${markSizeClass}`}
+      style={
+        isResponsiveMark
+          ? undefined
+          : { width: px, height: px, minWidth: px, minHeight: px, maxWidth: px, maxHeight: px }
+      }
+    >
+      {image}
+    </span>
   );
 
   return (

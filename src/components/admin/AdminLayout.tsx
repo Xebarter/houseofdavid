@@ -84,7 +84,6 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             size="md"
             src={BRAND_SIDEBAR_LOGO_SRC}
             framed
-            priority
             className="shrink-0"
           />
           <div className="min-w-0 flex-1">

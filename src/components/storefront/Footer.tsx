@@ -77,18 +77,12 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 sm:gap-12 py-12 sm:py-16">
           <div className="min-w-0">
-            <Link href="/" className="inline-flex max-w-full min-w-0 hover:opacity-90 transition-opacity mb-4">
+            <Link href="/" className="inline-flex max-w-full min-w-0 overflow-hidden hover:opacity-90 transition-opacity mb-4">
               <BrandLogo
-                size="sm"
                 showName
-                className="min-w-0 sm:hidden"
-                nameClassName="text-base leading-tight"
-              />
-              <BrandLogo
-                size="lg"
-                showName
-                className="hidden min-w-0 sm:inline-flex sm:gap-3"
-                nameClassName="text-xl sm:text-2xl"
+                className="min-w-0 max-w-full"
+                markClassName="h-8 w-8 sm:h-12 sm:w-12"
+                nameClassName="text-sm sm:text-xl md:text-2xl leading-tight"
               />
             </Link>
             <p className="text-sm text-luxury-smoke font-light leading-relaxed max-w-xs">
