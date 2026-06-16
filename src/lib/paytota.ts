@@ -55,6 +55,7 @@ export function mapPaytotaStatus(status: string): string {
     case 'paid':
       return 'paid';
     case 'error':
+    case 'payment_failure':
       return 'failed';
     case 'cancelled':
       return 'cancelled';
@@ -67,8 +68,25 @@ export function mapPaytotaStatus(status: string): string {
   }
 }
 
-export function isPaytotaPaymentSuccessful(status: string): boolean {
-  return status === 'paid';
+function normalizePhoneForPaytota(phone: string, country: string): string {
+  const digits = phone.replace(/\D/g, '');
+  if (!digits) return phone;
+
+  const countryCode = mapCountryCode(country);
+  if (countryCode === 'UG' && digits.startsWith('0')) {
+    return `256${digits.slice(1)}`;
+  }
+  if (digits.startsWith('256') || digits.startsWith('254') || digits.startsWith('251')) {
+    return digits;
+  }
+  if (countryCode === 'UG') return `256${digits}`;
+  if (countryCode === 'KE') return `254${digits}`;
+  if (countryCode === 'ET') return `251${digits}`;
+  return digits;
+}
+
+export function isPaytotaStatusPending(status: string): boolean {
+  return ['created', 'pending', 'pending_execute', 'pending_charge', 'viewed'].includes(status);
 }
 
 export function buildPurchasePayload(
@@ -82,14 +100,12 @@ export function buildPurchasePayload(
 
   const { customer, items } = input;
   const country = mapCountryCode(customer.country);
-  const baseRedirect = `${origin}/payment-result?order_id=${order.id}`;
-  const successRedirect = `${baseRedirect}&source=success`;
-  const failureRedirect = `${baseRedirect}&source=failure`;
+  const returnRedirect = `${origin}/payment-result?order_id=${order.id}`;
 
   return {
     client: {
       email: customer.email,
-      phone: customer.phone,
+      phone: normalizePhoneForPaytota(customer.phone, customer.country),
       country,
       full_name: customer.name,
       city: customer.city,
@@ -107,10 +123,14 @@ export function buildPurchasePayload(
     reference: order.id,
     skip_capture: false,
     brand_id: PAYTOTA_BRAND_ID,
-    success_redirect: successRedirect,
-    failure_redirect: failureRedirect,
-    cancel_redirect: failureRedirect,
+    success_redirect: returnRedirect,
+    failure_redirect: returnRedirect,
+    cancel_redirect: returnRedirect,
   };
+}
+
+export function isPaytotaPaymentSuccessful(status: string): boolean {
+  return status === 'paid';
 }
 
 export async function createPurchase(

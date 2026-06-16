@@ -4,6 +4,34 @@ import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Check, X } from 'lucide-react';
 
+const POLL_INTERVAL_MS = 3000;
+const MAX_POLL_ATTEMPTS = 10;
+
+type StatusResponse = {
+  success: boolean;
+  pending?: boolean;
+  orderId?: string;
+  status?: string;
+};
+
+async function fetchPaymentStatus(orderId?: string | null, purchaseId?: string | null): Promise<StatusResponse> {
+  const params = new URLSearchParams();
+  if (orderId) params.set('orderId', orderId);
+  if (purchaseId) params.set('purchaseId', purchaseId);
+
+  const response = await fetch(`/api/paytota/status?${params.toString()}`);
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.error || 'Status check failed');
+  }
+
+  return response.json();
+}
+
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export function PaymentResult() {
   const [loading, setLoading] = useState(true);
   const [paymentSuccess, setPaymentSuccess] = useState<boolean | null>(null);
@@ -12,10 +40,11 @@ export function PaymentResult() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
+    let cancelled = false;
+
     const handlePaymentResult = async () => {
       const orderIdParam = searchParams?.get('order_id');
       const purchaseIdParam = searchParams?.get('purchase_id');
-      const statusParam = searchParams?.get('status');
 
       if (!orderIdParam && !purchaseIdParam) {
         setPaymentSuccess(false);
@@ -26,27 +55,45 @@ export function PaymentResult() {
       if (orderIdParam) setOrderId(orderIdParam);
 
       try {
-        const params = new URLSearchParams();
-        if (orderIdParam) params.set('orderId', orderIdParam);
-        if (purchaseIdParam) params.set('purchaseId', purchaseIdParam);
-        if (statusParam) params.set('status', statusParam);
+        let lastResult: StatusResponse | null = null;
 
-        const response = await fetch(`/api/paytota/status?${params.toString()}`);
+        for (let attempt = 0; attempt < MAX_POLL_ATTEMPTS; attempt += 1) {
+          if (cancelled) return;
 
-        if (!response.ok) throw new Error('Status check failed');
+          lastResult = await fetchPaymentStatus(orderIdParam, purchaseIdParam);
 
-        const data = await response.json();
-        setPaymentSuccess(data.success);
-        if (data.orderId) setOrderId(data.orderId);
+          if (lastResult.orderId) setOrderId(lastResult.orderId);
+          if (lastResult.success) {
+            setPaymentSuccess(true);
+            setLoading(false);
+            return;
+          }
+
+          if (!lastResult.pending) {
+            setPaymentSuccess(false);
+            setLoading(false);
+            return;
+          }
+
+          if (attempt < MAX_POLL_ATTEMPTS - 1) {
+            await wait(POLL_INTERVAL_MS);
+          }
+        }
+
+        setPaymentSuccess(lastResult?.success ?? false);
       } catch (error) {
         console.error('Error checking payment status:', error);
         setPaymentSuccess(false);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     handlePaymentResult();
+
+    return () => {
+      cancelled = true;
+    };
   }, [searchParams]);
 
   if (loading) {

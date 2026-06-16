@@ -197,14 +197,28 @@ export function AdminTableBody({ children }: { children: ReactNode }) {
   return <tbody className="divide-y divide-gray-800">{children}</tbody>;
 }
 
-export function AdminTr({ children, className = '' }: { children: ReactNode; className?: string }) {
+export function AdminTr({
+  children,
+  className = '',
+  ...props
+}: React.HTMLAttributes<HTMLTableRowElement> & { children: ReactNode }) {
   return (
-    <tr className={`hover:bg-gray-800/40 transition-colors ${className}`}>{children}</tr>
+    <tr className={`hover:bg-gray-800/40 transition-colors ${className}`} {...props}>
+      {children}
+    </tr>
   );
 }
 
-export function AdminTd({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <td className={`px-4 sm:px-6 py-4 text-sm text-stone-200 ${className}`}>{children}</td>;
+export function AdminTd({
+  children,
+  className = '',
+  ...props
+}: React.TdHTMLAttributes<HTMLTableCellElement> & { children: ReactNode }) {
+  return (
+    <td className={`px-4 sm:px-6 py-4 text-sm text-stone-200 ${className}`} {...props}>
+      {children}
+    </td>
+  );
 }
 
 export function AdminEmptyState({ message }: { message: string }) {

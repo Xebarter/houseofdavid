@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPurchaseStatus, mapPaytotaStatus, isPaytotaPaymentSuccessful } from '@/lib/paytota';
+import { getPurchaseStatus, mapPaytotaStatus, isPaytotaPaymentSuccessful, isPaytotaStatusPending } from '@/lib/paytota';
 import { updateOrderStatus, getOrderById } from '@/lib/firestore-server';
 
 export async function GET(request: NextRequest) {
@@ -39,6 +39,7 @@ export async function GET(request: NextRequest) {
       status: statusResponse.status,
       orderStatus,
       success: isPaytotaPaymentSuccessful(statusResponse.status),
+      pending: isPaytotaStatusPending(statusResponse.status),
       orderId: finalOrderId,
     });
   } catch (error) {
