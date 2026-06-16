@@ -1,12 +1,12 @@
 import type { Product } from '@/lib/types';
 import { productPath } from '@/lib/product-routes';
 import { BRAND_NAME } from '@/lib/brand';
+import { getSiteUrl } from '@/lib/site';
 
 export type ShareProductResult = 'shared' | 'copied' | 'cancelled' | 'failed';
 
 export function productShareUrl(product: Pick<Product, 'id'>): string {
-  if (typeof window === 'undefined') return productPath(product);
-  return `${window.location.origin}${productPath(product)}`;
+  return `${getSiteUrl()}${productPath(product)}`;
 }
 
 export async function shareProduct(

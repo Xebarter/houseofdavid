@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "set-admin-claim": "node firebase/scripts/set-admin-claim.cjs"
+    "set-admin-claim": "node firebase/scripts/set-admin-claim.cjs",
+    "firebase:add-domain": "node firebase/scripts/add-authorized-domain.cjs"
   },
   "dependencies": {
     "firebase": "^11.6.0",

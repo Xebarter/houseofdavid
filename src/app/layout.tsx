@@ -8,6 +8,7 @@ import {
   BRAND_THEME_COLOR,
   BRAND_BACKGROUND_COLOR,
 } from '@/lib/brand';
+import { SITE_URL } from '@/lib/site';
 import './globals.css';
 
 const display = Cormorant_Garamond({
@@ -27,6 +28,7 @@ const sans = DM_Sans({
 const siteDescription = `${BRAND_TAGLINE} — discover artisanal perfumes and exclusive scents.`;
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: BRAND_NAME,
   description: siteDescription,
   manifest: '/site.webmanifest',

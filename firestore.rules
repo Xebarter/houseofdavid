@@ -37,10 +37,10 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Customers: anyone can create (checkout), only admin can read all
+    // Customers: anyone can read/create/update (needed for checkout upsert), only admin can delete
     match /customers/{docId} {
-      allow create: if true;
-      allow read, update: if isAdmin();
+      allow read, create, update: if true;
+      allow delete: if isAdmin();
     }
 
     // Orders: anyone can create (checkout), only admin can read/update
