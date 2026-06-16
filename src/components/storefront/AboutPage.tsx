@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { BRAND_NAME, BRAND_EMAIL, BRAND_HERO_SUBLINE } from '@/lib/brand';
+import { BRAND_NAME, BRAND_EMAIL, BRAND_HERO_SUBLINE, BRAND_PHONE_DISPLAY, BRAND_PHONE_TEL, BRAND_LOCATION } from '@/lib/brand';
 import { Header } from '@/components/storefront/Header';
 import { Footer } from '@/components/storefront/Footer';
 import { Cart } from '@/components/storefront/Cart';
@@ -407,29 +407,31 @@ export function AboutPage() {
               </div>
 
               <div className="border border-white/5 bg-luxury-charcoal/40 p-8 sm:p-10">
-                <p className="luxury-label mb-4">Concierge</p>
-                <h3 className="luxury-heading text-2xl font-light mb-4">Visit Our Maison</h3>
+                <p className="luxury-label mb-4">Contact</p>
+                <h3 className="luxury-heading text-2xl font-light mb-4">Get in Touch</h3>
                 <div className="space-y-4 text-sm text-luxury-cream/65 font-light leading-relaxed">
-                  <p>
-                    55 Rue du Faubourg Saint-Honoré
-                    <br />
-                    Paris, 75008
-                  </p>
-                  <a
-                    href={`mailto:${BRAND_EMAIL}`}
-                    className="block text-luxury-gold hover:text-luxury-gold-light transition-colors"
-                  >
-                    {BRAND_EMAIL}
-                  </a>
-                  <a
-                    href="tel:+33142685400"
-                    className="block hover:text-luxury-cream transition-colors"
-                  >
-                    +33 (0)1 42 68 54 00
-                  </a>
-                  <p className="text-xs uppercase tracking-wideish text-luxury-gold-muted pt-2">
-                    By appointment only
-                  </p>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wideish text-luxury-gold-muted mb-1">Email</p>
+                    <a
+                      href={`mailto:${BRAND_EMAIL}`}
+                      className="text-luxury-gold hover:text-luxury-gold-light transition-colors"
+                    >
+                      {BRAND_EMAIL}
+                    </a>
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wideish text-luxury-gold-muted mb-1">Location</p>
+                    <p>{BRAND_LOCATION}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wideish text-luxury-gold-muted mb-1">Phone</p>
+                    <a
+                      href={`tel:${BRAND_PHONE_TEL}`}
+                      className="hover:text-luxury-cream transition-colors"
+                    >
+                      {BRAND_PHONE_DISPLAY}
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>

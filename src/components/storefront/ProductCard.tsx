@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, Heart, Share2 } from 'lucide-react';
 import type { Product } from '@/lib/types';
 import { formatCurrency } from '@/lib/format';
 import { useCart } from '@/contexts/CartContext';
@@ -10,6 +10,10 @@ import { productPath } from '@/lib/product-routes';
 import { DEFAULT_PRODUCT_IMAGE } from '@/lib/featured-products';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { PRODUCT_CARD_SIZES } from '@/lib/images/urls';
+import { addToDefaultWishlist, isInDefaultWishlist } from '@/lib/wishlist-client';
+import { shareProduct } from '@/lib/share-product';
+import { trackEvent } from '@/lib/analytics';
+import { useRouter } from 'next/navigation';
 
 interface ProductCardProps {
   product: Product;
@@ -20,6 +24,9 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
   const { addToCart } = useCart();
   const [added, setAdded] = useState(false);
   const isShowcase = variant === 'showcase';
+  const router = useRouter();
+  const [wishlisted, setWishlisted] = useState(false);
+  const [shareFeedback, setShareFeedback] = useState<string | null>(null);
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -30,6 +37,71 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
   };
 
   const badge = product.is_limited ? 'Limited' : product.is_new ? 'New' : product.featured ? 'Signature' : null;
+
+  useEffect(() => {
+    isInDefaultWishlist(product.id).then(setWishlisted);
+  }, [product.id]);
+
+  const handleWishlist = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      const { listId } = await addToDefaultWishlist(product.id);
+      setWishlisted(true);
+      trackEvent({ type: 'wishlist_add', product_id: product.id, wishlist_id: listId });
+    } catch (err) {
+      if (err instanceof Error && err.message === 'AUTH_REQUIRED') {
+        router.push('/account/login');
+        return;
+      }
+    }
+  };
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const result = await shareProduct(product);
+    if (result === 'cancelled' || result === 'failed') return;
+    setShareFeedback(result === 'shared' ? 'Shared' : 'Link copied');
+    setTimeout(() => setShareFeedback(null), 2000);
+  };
+
+  const actionBtnClass = (active: boolean) =>
+    active
+      ? 'border-luxury-gold/40 bg-luxury-black/55 text-luxury-gold'
+      : 'border-white/10 bg-luxury-black/40 text-luxury-cream/80 hover:text-luxury-cream hover:border-luxury-gold/25';
+
+  const cardActions = (size: 'showcase' | 'default') => (
+    <div
+      className={`absolute z-10 flex flex-col gap-2 ${size === 'showcase' ? 'top-5 right-5' : 'top-4 right-4'}`}
+    >
+      <button
+        type="button"
+        onClick={handleShare}
+        aria-label={shareFeedback ? shareFeedback : `Share ${product.name}`}
+        title={shareFeedback ?? 'Share'}
+        className={`flex items-center justify-center border backdrop-blur-sm transition-colors ${
+          size === 'showcase' ? 'w-10 h-10' : 'w-9 h-9'
+        } ${shareFeedback ? 'border-luxury-gold/40 bg-luxury-black/55 text-luxury-gold' : actionBtnClass(false)}`}
+      >
+        <Share2 className={size === 'showcase' ? 'w-4.5 h-4.5' : 'w-4 h-4'} strokeWidth={1.25} />
+      </button>
+      <button
+        type="button"
+        onClick={handleWishlist}
+        aria-label="Save to wishlist"
+        className={`flex items-center justify-center border backdrop-blur-sm transition-colors ${
+          size === 'showcase' ? 'w-10 h-10' : 'w-9 h-9'
+        } ${actionBtnClass(wishlisted)}`}
+      >
+        <Heart
+          className={size === 'showcase' ? 'w-4.5 h-4.5' : 'w-4 h-4'}
+          strokeWidth={1.25}
+          fill={wishlisted ? 'currentColor' : 'none'}
+        />
+      </button>
+    </div>
+  );
 
   if (isShowcase) {
     return (
@@ -51,6 +123,8 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
                 {badge}
               </span>
             )}
+
+            {cardActions('showcase')}
 
             <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8 z-10">
               <p className="text-[10px] uppercase tracking-wideish text-luxury-gold-muted mb-2">
@@ -107,6 +181,8 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
               {badge}
             </span>
           )}
+
+          {cardActions('default')}
 
           <button
             type="button"

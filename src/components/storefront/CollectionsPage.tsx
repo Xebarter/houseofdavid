@@ -3,12 +3,13 @@
 import { useEffect, useMemo, useState, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Search, SlidersHorizontal, X } from 'lucide-react';
+import { Search, SlidersHorizontal, X, ChevronDown } from 'lucide-react';
 import { getStorefrontCatalog } from '@/lib/firestore';
 import type { Product, Category } from '@/lib/types';
 import { BRAND_NAME } from '@/lib/brand';
 import { PERFUME_CATEGORIES } from '@/components/admin/products/productFormUtils';
-import { DEFAULT_PRODUCT_IMAGE } from '@/lib/featured-products';
+import { DEFAULT_PRODUCT_IMAGE, getFeaturedProducts } from '@/lib/featured-products';
+import { HeroFeaturedCarousel } from '@/components/storefront/HeroFeaturedCarousel';
 import {
   sortProducts,
   filterProducts,
@@ -23,6 +24,7 @@ import { Cart } from '@/components/storefront/Cart';
 import { Checkout } from '@/components/storefront/Checkout';
 import { ProductCard } from '@/components/storefront/ProductCard';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
+import { trackEvent } from '@/lib/analytics';
 
 const HERO_IMAGE =
   'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=2400&q=80';
@@ -45,6 +47,23 @@ function CollectionsContent() {
   const featuredParam = searchParams.get('featured') === '1';
 
   const [searchInput, setSearchInput] = useState(queryParam);
+  const [activeHeroProduct, setActiveHeroProduct] = useState<Product | null>(null);
+
+  const heroFeatured = useMemo(() => getFeaturedProducts(products), [products]);
+  const showHeroCarousel = !loading && heroFeatured.length > 0;
+
+  useEffect(() => {
+    if (heroFeatured[0]) setActiveHeroProduct(heroFeatured[0]);
+  }, [heroFeatured]);
+
+  const heroBackgroundImage =
+    activeHeroProduct?.image_variants?.primary ||
+    activeHeroProduct?.image_url ||
+    HERO_IMAGE;
+
+  const scrollToCatalog = () => {
+    document.getElementById('collection-catalog')?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   useEffect(() => {
     getStorefrontCatalog()
@@ -55,6 +74,26 @@ function CollectionsContent() {
       .catch((err) => console.error('Error loading catalog:', err))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    trackEvent({ type: 'collection_view' });
+  }, []);
+
+  useEffect(() => {
+    const handle = window.setTimeout(() => {
+      trackEvent({
+        type: 'collection_filter',
+        meta: {
+          category: categoryParam,
+          sort: sortParam,
+          q: queryParam,
+          inStock: inStockParam,
+          featured: featuredParam,
+        },
+      });
+    }, 600);
+    return () => window.clearTimeout(handle);
+  }, [categoryParam, sortParam, queryParam, inStockParam, featuredParam]);
 
   useEffect(() => {
     setSearchInput(queryParam);
@@ -72,11 +111,6 @@ function CollectionsContent() {
   const categoriesWithMeta = useMemo(
     () => enrichCategories(categoryOptions, products),
     [categoryOptions, products]
-  );
-
-  const featuredProducts = useMemo(
-    () => products.filter((p) => p.featured).slice(0, 4),
-    [products]
   );
 
   const filteredProducts = useMemo(() => {
@@ -134,66 +168,116 @@ function CollectionsContent() {
       <Header onCartClick={() => setShowCart(true)} />
 
       <main className="pt-20">
-        {/* Hero */}
-        <section className="relative overflow-hidden border-b border-white/5">
+        {/* Hero — shoppable featured carousel (same pattern as home) */}
+        <section className="relative min-h-[85vh] lg:min-h-screen flex items-center overflow-hidden border-b border-white/5">
           <div className="absolute inset-0">
             <div
-              className="absolute inset-0 bg-cover bg-center scale-105"
+              className="absolute inset-0 bg-cover bg-center animate-slow-zoom"
               style={{ backgroundImage: `url(${HERO_IMAGE})` }}
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-luxury-black/80 via-luxury-black/60 to-luxury-black" />
-            <div className="absolute inset-0 bg-gradient-to-r from-luxury-black/70 via-transparent to-luxury-black/50" />
-          </div>
-
-          <div className="relative max-w-7xl mx-auto px-6 sm:px-8 py-20 sm:py-28">
-            <nav className="flex items-center gap-2 text-[11px] uppercase tracking-wideish text-luxury-smoke mb-8">
-              <Link href="/" className="hover:text-luxury-cream transition-colors">
-                Home
-              </Link>
-              <span className="text-luxury-gold-muted/50">/</span>
-              <span className="text-luxury-cream/70">Collections</span>
-            </nav>
-
-            <p className="luxury-label mb-4">{BRAND_NAME}</p>
-            <h1 className="luxury-heading text-4xl sm:text-5xl md:text-6xl font-light leading-tight max-w-3xl mb-6">
-              The Complete Collection
-            </h1>
-            <div className="luxury-divider max-w-xs mb-6" />
-            <p className="text-base sm:text-lg text-luxury-cream/70 font-light max-w-2xl leading-relaxed mb-10">
-              Discover every composition in our catalog — from rare oud extractions to refined
-              everyday signatures. Curated for presence, crafted for longevity.
-            </p>
-
-            {!loading && (
-              <div className="flex flex-wrap gap-8 sm:gap-12">
-                <div>
-                  <p className="text-2xl sm:text-3xl text-luxury-cream font-light tabular-nums">
-                    {products.length}
-                  </p>
-                  <p className="text-[10px] uppercase tracking-wideish text-luxury-gold-muted mt-1">
-                    Fragrances
-                  </p>
-                </div>
-                <div>
-                  <p className="text-2xl sm:text-3xl text-luxury-cream font-light tabular-nums">
-                    {categoriesWithMeta.filter((c) => c.productCount > 0).length ||
-                      categoriesWithMeta.length}
-                  </p>
-                  <p className="text-[10px] uppercase tracking-wideish text-luxury-gold-muted mt-1">
-                    Families
-                  </p>
-                </div>
-                <div>
-                  <p className="text-2xl sm:text-3xl text-luxury-cream font-light tabular-nums">
-                    {products.filter((p) => p.featured).length}
-                  </p>
-                  <p className="text-[10px] uppercase tracking-wideish text-luxury-gold-muted mt-1">
-                    Signatures
-                  </p>
-                </div>
-              </div>
+            {showHeroCarousel && activeHeroProduct?.image_url && (
+              <div
+                key={activeHeroProduct.id}
+                className="absolute inset-0 bg-cover bg-center animate-hero-bg-fade"
+                style={{ backgroundImage: `url(${heroBackgroundImage})` }}
+              />
             )}
+            <div className="absolute inset-0 bg-gradient-to-b from-luxury-black/80 via-luxury-black/55 to-luxury-black" />
+            <div className="absolute inset-0 bg-gradient-to-r from-luxury-black/75 via-luxury-black/35 to-luxury-black/65" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_50%,rgba(201,169,98,0.08),transparent_55%)]" />
           </div>
+
+          <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-8 py-16 sm:py-24 lg:py-28">
+            <div
+              className={`grid gap-12 lg:gap-16 items-center ${
+                showHeroCarousel || loading
+                  ? 'lg:grid-cols-[1fr_minmax(300px,420px)]'
+                  : 'max-w-4xl'
+              }`}
+            >
+              <div>
+                <nav className="flex items-center gap-2 text-[11px] uppercase tracking-wideish text-luxury-smoke mb-8">
+                  <Link href="/" className="hover:text-luxury-cream transition-colors">
+                    Home
+                  </Link>
+                  <span className="text-luxury-gold-muted/50">/</span>
+                  <span className="text-luxury-cream/70">Collections</span>
+                </nav>
+
+                <p className="luxury-label mb-4">{BRAND_NAME}</p>
+                <h1 className="luxury-heading text-4xl sm:text-5xl md:text-6xl font-light leading-tight max-w-3xl mb-6">
+                  {activeCategoryLabel !== 'All' ? activeCategoryLabel : 'The Collection'}
+                </h1>
+                <div className="luxury-divider max-w-xs mb-6" />
+                <p className="text-base sm:text-lg text-luxury-cream/70 font-light max-w-xl leading-relaxed mb-8">
+                  Shop signature compositions — buy directly from the hero or explore the full
+                  catalog below.
+                </p>
+
+                {!loading && (
+                  <div className="flex flex-wrap gap-8 sm:gap-12 mb-8">
+                    <div>
+                      <p className="text-2xl sm:text-3xl text-luxury-cream font-light tabular-nums">
+                        {products.length}
+                      </p>
+                      <p className="text-[10px] uppercase tracking-wideish text-luxury-gold-muted mt-1">
+                        Fragrances
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-2xl sm:text-3xl text-luxury-cream font-light tabular-nums">
+                        {categoriesWithMeta.filter((c) => c.productCount > 0).length ||
+                          categoriesWithMeta.length}
+                      </p>
+                      <p className="text-[10px] uppercase tracking-wideish text-luxury-gold-muted mt-1">
+                        Families
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  onClick={scrollToCatalog}
+                  className="luxury-btn-primary min-w-[200px]"
+                >
+                  Browse All
+                </button>
+              </div>
+
+              {loading && (
+                <div className="w-full max-w-md lg:max-w-none mx-auto">
+                  <div className="border border-white/10 bg-luxury-black/40 backdrop-blur-xl p-6 sm:p-8">
+                    <div className="h-3 w-28 bg-white/5 rounded animate-pulse mb-6" />
+                    <div className="aspect-[4/5] bg-white/5 animate-pulse mb-6" />
+                    <div className="h-8 w-3/4 bg-white/5 rounded animate-pulse mb-3" />
+                    <div className="h-4 w-1/3 bg-white/5 rounded animate-pulse mb-6" />
+                    <div className="flex gap-3">
+                      <div className="h-11 flex-1 bg-white/5 animate-pulse" />
+                      <div className="h-11 flex-1 bg-white/5 animate-pulse" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {showHeroCarousel && (
+                <HeroFeaturedCarousel
+                  products={heroFeatured}
+                  onOpenCart={() => setShowCart(true)}
+                  onActiveProductChange={setActiveHeroProduct}
+                />
+              )}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={scrollToCatalog}
+            aria-label="Scroll to catalog"
+            className="absolute bottom-8 left-1/2 -translate-x-1/2 text-luxury-gold-muted animate-scroll-hint z-10"
+          >
+            <ChevronDown className="h-6 w-6" strokeWidth={1} />
+          </button>
         </section>
 
         {/* Category showcase — hidden when a specific category is selected */}
@@ -247,22 +331,8 @@ function CollectionsContent() {
           </section>
         )}
 
-        {/* Featured strip */}
-        {!loading && featuredProducts.length > 0 && categoryParam === 'all' && !queryParam && (
-          <section className="py-14 border-b border-white/5">
-            <div className="max-w-7xl mx-auto px-6 sm:px-8">
-              <p className="luxury-label mb-6">Signature Selection</p>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-8">
-                {featuredProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* Toolbar */}
-        <section className="sticky top-20 z-30 bg-luxury-black/95 backdrop-blur-md border-b border-white/5">
+        {/* Toolbar + catalog */}
+        <section id="collection-catalog" className="sticky top-20 z-30 bg-luxury-black/95 backdrop-blur-md border-b border-white/5">
           <div className="max-w-7xl mx-auto px-6 sm:px-8 py-4">
             <div className="flex flex-col lg:flex-row lg:items-center gap-4">
               <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-md">

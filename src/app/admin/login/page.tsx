@@ -6,7 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { GoogleSignInButton } from '@/components/auth/GoogleSignInButton';
 import { AlertCircle, Lock } from 'lucide-react';
 import { FirebaseError } from 'firebase/app';
-import { BRAND_NAME } from '@/lib/brand';
+import { BrandLogo } from '@/components/brand/BrandLogo';
 import { AdminInput, AdminLabel, AdminButton } from '@/components/admin/ui/AdminUI';
 
 function getAuthErrorMessage(error: unknown): string {
@@ -82,10 +82,12 @@ export default function AdminLoginPage() {
     <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-gradient-to-br from-amber-600 to-amber-700 rounded-xl flex items-center justify-center font-bold text-xl text-white mx-auto mb-4 shadow-lg shadow-amber-900/30">
-            H
-          </div>
-          <h1 className="text-2xl font-semibold text-stone-100">{BRAND_NAME}</h1>
+          <BrandLogo
+            size="lg"
+            showName
+            className="justify-center mb-4"
+            nameClassName="text-2xl font-semibold text-stone-100"
+          />
           <p className="text-gray-500 text-sm mt-1">Administration Portal</p>
         </div>
 

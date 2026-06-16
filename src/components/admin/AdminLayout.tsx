@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { BRAND_NAME } from '@/lib/brand';
+import { BrandLogo } from '@/components/brand/BrandLogo';
 
 const navItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/admin' },
@@ -39,7 +40,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
 
   const handleSignOut = async () => {
     await signOut();
-    router.push('/admin/login');
+    router.push('/');
   };
 
   return (
@@ -47,12 +48,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       {/* Mobile header */}
       <header className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur border-b border-gray-800">
         <div className="flex items-center justify-between px-4 h-14">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-gradient-to-br from-amber-600 to-amber-700 rounded-lg flex items-center justify-center font-bold text-sm text-white">
-              H
-            </div>
-            <span className="text-sm font-semibold text-stone-100">{BRAND_NAME}</span>
-          </div>
+          <BrandLogo size="sm" showName nameClassName="text-sm font-semibold text-stone-100" />
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="p-2 rounded-lg text-gray-400 hover:text-stone-200 hover:bg-gray-800 transition-colors"
@@ -77,9 +73,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         } flex flex-col`}
       >
         <div className="hidden lg:flex items-center gap-3 px-5 py-5 border-b border-gray-800">
-          <div className="w-9 h-9 bg-gradient-to-br from-amber-600 to-amber-700 rounded-lg flex items-center justify-center font-bold text-white">
-            H
-          </div>
+          <BrandLogo size="sm" />
           <div className="min-w-0">
             <h1 className="text-base font-semibold text-stone-100 truncate">{BRAND_NAME}</h1>
             <p className="text-xs text-gray-500">Administration</p>

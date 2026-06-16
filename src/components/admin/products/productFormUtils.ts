@@ -2,12 +2,14 @@ import type { Product } from '@/lib/types';
 import type { ImageVariants } from '@/lib/images/types';
 
 export const PERFUME_CATEGORIES = [
-  { id: 'floral', name: 'Floral', description: '' },
   { id: 'woody', name: 'Woody', description: '' },
-  { id: 'oriental', name: 'Oriental', description: '' },
-  { id: 'fresh', name: 'Fresh', description: '' },
-  { id: 'oud', name: 'Oud', description: '' },
-  { id: 'niche', name: 'Niche', description: '' },
+  { id: 'fresh-aquatic', name: 'Fresh (Aquatic)', description: '' },
+  { id: 'citrus', name: 'Citrus', description: '' },
+  { id: 'aromatic', name: 'Aromatic', description: '' },
+  { id: 'spicy', name: 'Spicy', description: '' },
+  { id: 'oriental-amber', name: 'Oriental (Amber)', description: '' },
+  { id: 'leather', name: 'Leather', description: '' },
+  { id: 'gourmand', name: 'Gourmand', description: '' },
 ];
 
 export const DEFAULT_IMAGE =

@@ -18,12 +18,33 @@ import { DEFAULT_PRODUCT_IMAGE } from '@/lib/featured-products';
 import { OptimizedImage } from '@/components/ui/OptimizedImage';
 import { PRODUCT_DETAIL_SIZES } from '@/lib/images/urls';
 import { RelatedProducts } from './RelatedProducts';
+import { trackEvent } from '@/lib/analytics';
+import { addToDefaultWishlist, isInDefaultWishlist } from '@/lib/wishlist-client';
 
 type ProductDetailsProps = {
   onOpenCart?: () => void;
 };
 
 type DetailTab = 'story' | 'notes' | 'details';
+
+function HeartIcon({ filled }: { filled: boolean }) {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill={filled ? 'currentColor' : 'none'}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M12 21s-7.5-4.4-10-9.3C.5 8.3 2.1 5 5.7 4.2c2-.5 4 .3 5.3 1.8 1.3-1.5 3.3-2.3 5.3-1.8 3.6.8 5.2 4.1 3.7 7.5C19.5 16.6 12 21 12 21Z"
+        stroke="currentColor"
+        strokeWidth="1.25"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
 
 function ProductGallery({
   images,
@@ -165,6 +186,7 @@ export function ProductDetails({ onOpenCart }: ProductDetailsProps) {
   const [activeImage, setActiveImage] = useState(0);
   const [activeTab, setActiveTab] = useState<DetailTab>('story');
   const [added, setAdded] = useState(false);
+  const [wishlisted, setWishlisted] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const loadProduct = useCallback(async () => {
@@ -206,6 +228,16 @@ export function ProductDetails({ onOpenCart }: ProductDetailsProps) {
   useEffect(() => {
     loadProduct();
   }, [loadProduct]);
+
+  useEffect(() => {
+    if (!product?.id) return;
+    trackEvent({ type: 'product_view', product_id: product.id });
+  }, [product?.id]);
+
+  useEffect(() => {
+    if (!product?.id) return;
+    isInDefaultWishlist(product.id).then(setWishlisted);
+  }, [product?.id]);
 
   const images = useMemo(() => {
     if (!product) return [DEFAULT_PRODUCT_IMAGE];
@@ -253,6 +285,18 @@ export function ProductDetails({ onOpenCart }: ProductDetailsProps) {
     if (!inStock) return;
     addToCart(product, quantity);
     onOpenCart?.();
+  };
+
+  const handleWishlist = async () => {
+    try {
+      const { listId } = await addToDefaultWishlist(product.id);
+      setWishlisted(true);
+      trackEvent({ type: 'wishlist_add', product_id: product.id, wishlist_id: listId });
+    } catch (err) {
+      if (err instanceof Error && err.message === 'AUTH_REQUIRED') {
+        router.push('/account/login');
+      }
+    }
   };
 
   const tabs: { id: DetailTab; label: string }[] = [
@@ -404,6 +448,18 @@ export function ProductDetails({ onOpenCart }: ProductDetailsProps) {
                 className="flex-1 min-h-[52px] inline-flex items-center justify-center px-6 text-xs font-medium uppercase tracking-wideish border border-white/15 text-luxury-cream/90 hover:border-luxury-gold/40 hover:text-luxury-cream transition-all duration-500 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {added ? 'Added to Bag' : 'Add to Bag'}
+              </button>
+              <button
+                type="button"
+                onClick={handleWishlist}
+                aria-label="Save to wishlist"
+                className={`min-h-[52px] w-full sm:w-[56px] inline-flex items-center justify-center border backdrop-blur-sm transition-colors ${
+                  wishlisted
+                    ? 'border-luxury-gold/40 bg-luxury-black/40 text-luxury-gold'
+                    : 'border-white/15 bg-transparent text-luxury-cream/80 hover:text-luxury-cream hover:border-luxury-gold/40'
+                }`}
+              >
+                <HeartIcon filled={wishlisted} />
               </button>
             </div>
 
