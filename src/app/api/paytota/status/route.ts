@@ -6,20 +6,9 @@ export async function GET(request: NextRequest) {
   try {
     const purchaseId = request.nextUrl.searchParams.get('purchaseId');
     const orderId = request.nextUrl.searchParams.get('orderId');
-    const redirectStatus = request.nextUrl.searchParams.get('status');
 
     if (!purchaseId && !orderId) {
       return NextResponse.json({ error: 'Missing purchaseId or orderId' }, { status: 400 });
-    }
-
-    if (redirectStatus === 'failed' && orderId) {
-      await updateOrderStatus(orderId, 'failed');
-      return NextResponse.json({
-        status: 'error',
-        orderStatus: 'failed',
-        success: false,
-        orderId,
-      });
     }
 
     let resolvedPurchaseId = purchaseId;

@@ -82,8 +82,9 @@ export function buildPurchasePayload(
 
   const { customer, items } = input;
   const country = mapCountryCode(customer.country);
-  const successRedirect = `${origin}/payment-result?order_id=${order.id}`;
-  const failureRedirect = `${origin}/payment-result?order_id=${order.id}&status=failed`;
+  const baseRedirect = `${origin}/payment-result?order_id=${order.id}`;
+  const successRedirect = `${baseRedirect}&source=success`;
+  const failureRedirect = `${baseRedirect}&source=failure`;
 
   return {
     client: {
