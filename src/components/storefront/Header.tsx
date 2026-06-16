@@ -50,14 +50,27 @@ export function Header({ onCartClick }: HeaderProps) {
             : 'bg-transparent border-b border-transparent'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-6 sm:px-8">
-          <div className="flex items-center justify-between h-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16 sm:h-20 gap-3">
             <button
               onClick={() => router.push('/')}
-              className="hover:opacity-90 transition-opacity"
+              className="flex min-w-0 max-w-[calc(100%-9.5rem)] sm:max-w-none items-center hover:opacity-90 transition-opacity"
               aria-label={`${BRAND_NAME} home`}
             >
-              <BrandLogo size="md" showName className="sm:gap-3" nameClassName="text-xl sm:text-2xl" priority />
+              <BrandLogo
+                size="sm"
+                showName
+                priority
+                className="min-w-0 sm:hidden"
+                nameClassName="text-sm leading-tight"
+              />
+              <BrandLogo
+                size="md"
+                showName
+                priority
+                className="hidden min-w-0 sm:inline-flex sm:gap-3"
+                nameClassName="text-lg sm:text-xl lg:text-2xl"
+              />
             </button>
 
             <nav className="hidden md:flex items-center gap-10">

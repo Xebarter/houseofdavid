@@ -2,14 +2,14 @@ import Image from 'next/image';
 import { BRAND_LOGO_SRC, BRAND_NAME } from '@/lib/brand';
 
 const SIZE_MAP = {
-  sm: 28,
-  md: 36,
+  sm: 32,
+  md: 40,
   lg: 48,
 } as const;
 
 const SIZE_CLASS = {
-  sm: 'h-7 w-7',
-  md: 'h-9 w-9',
+  sm: 'h-8 w-8',
+  md: 'h-10 w-10',
   lg: 'h-12 w-12',
 } as const;
 
@@ -39,26 +39,29 @@ export function BrandLogo({
   const image = (
     <Image
       src={src}
-      alt={BRAND_NAME}
-      width={px * 2}
-      height={px * 2}
+      alt={showName ? '' : BRAND_NAME}
+      aria-hidden={showName || undefined}
+      width={px}
+      height={px}
       priority={priority}
-      className={`shrink-0 object-contain ${framed ? 'h-full w-full' : SIZE_CLASS[size]} ${imageClassName}`}
+      className={`block shrink-0 object-contain ${framed ? 'h-full w-full' : SIZE_CLASS[size]} ${imageClassName}`}
     />
   );
 
+  const mark = framed ? (
+    <span
+      className="flex shrink-0 items-center justify-center rounded-lg border border-white/10 bg-luxury-black/40 p-1"
+      style={{ width: px + 8, height: px + 8 }}
+    >
+      {image}
+    </span>
+  ) : (
+    image
+  );
+
   return (
-    <span className={`inline-flex items-center gap-2.5 min-w-0 ${className}`}>
-      {framed ? (
-        <span
-          className="flex shrink-0 items-center justify-center rounded-lg border border-white/10 bg-luxury-black/50 p-1.5"
-          style={{ width: px + 12, height: px + 12 }}
-        >
-          {image}
-        </span>
-      ) : (
-        image
-      )}
+    <span className={`inline-flex max-w-full min-w-0 items-center gap-2 sm:gap-2.5 ${className}`}>
+      {mark}
       {showName ? (
         <span
           className={`min-w-0 truncate font-display font-medium tracking-wide text-luxury-cream ${nameClassName}`}

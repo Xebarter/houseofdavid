@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { X, ChevronRight, User } from 'lucide-react';
 import { getStorefrontCatalog } from '@/lib/firestore';
-import { BRAND_SIDEBAR_LOGO_SRC } from '@/lib/brand';
 import { BrandLogo } from '@/components/brand/BrandLogo';
 import { PERFUME_CATEGORIES } from '@/components/admin/products/productFormUtils';
 import { enrichCategories } from '@/lib/collections-utils';
@@ -102,8 +101,6 @@ export function MobileNavDrawer({ open, onClose }: MobileNavDrawerProps) {
           >
             <BrandLogo
               size="sm"
-              src={BRAND_SIDEBAR_LOGO_SRC}
-              framed
               showName
               priority
               className="min-w-0"

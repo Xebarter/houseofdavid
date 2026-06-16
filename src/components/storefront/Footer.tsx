@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { BRAND_NAME, BRAND_EMAIL, BRAND_PHONE_DISPLAY, BRAND_PHONE_TEL, BRAND_LOCATION } from '@/lib/brand';
 import { BrandLogo } from '@/components/brand/BrandLogo';
@@ -68,10 +69,23 @@ export function Footer() {
 
   return (
     <footer className="bg-luxury-black border-t border-white/5">
-      <div className="max-w-7xl mx-auto px-6 sm:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 py-16">
-          <div>
-            <BrandLogo size="lg" showName nameClassName="text-2xl" className="mb-4" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 sm:gap-12 py-12 sm:py-16">
+          <div className="min-w-0">
+            <Link href="/" className="inline-flex max-w-full min-w-0 hover:opacity-90 transition-opacity mb-4">
+              <BrandLogo
+                size="sm"
+                showName
+                className="min-w-0 sm:hidden"
+                nameClassName="text-base leading-tight"
+              />
+              <BrandLogo
+                size="lg"
+                showName
+                className="hidden min-w-0 sm:inline-flex sm:gap-3"
+                nameClassName="text-xl sm:text-2xl"
+              />
+            </Link>
             <p className="text-sm text-luxury-smoke font-light leading-relaxed max-w-xs">
               Curating exceptional fragrances for the modern gentleman since 1995.
             </p>
